@@ -7,8 +7,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Seguimiento de Actividades Diarias</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
 
 <style>
@@ -20,7 +18,7 @@
     --panel: #ffffff;            
     --text: #334155;             /* Gris suave, menos agresivo que el negro puro */
     --muted: #94a3b8;            
-    --border: #e2e8f0;          
+    --border: #e2e8f0;           
     
     /* Tonos Vibrantes para interacciones */
     --neon-red: #f43f5e;         /* Rosa coral brillante en lugar de rojo oscuro */
@@ -65,19 +63,6 @@
     width: 100%;
     z-index: 9999;
     box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-  }
-  #alertaMemoria button {
-    background: white;
-    color: var(--danger);
-    padding: 6px 12px;
-    margin-top: 8px;
-    border-radius: 8px; 
-    font-size: 12px;
-    border: none;
-    cursor: pointer;
-    width: auto;
-    display: inline-flex;
-    font-weight: bold;
   }
 
   main {
@@ -289,6 +274,7 @@
   .check-item-lib {
     display: flex !important;
     flex-direction: column !important;
+    align-items: stretch !important; /* MANTIENE TODO ALINEADO A LA IZQUIERDA */
     gap: 12px;
     margin-top: 15px;
     padding: 16px !important;
@@ -346,7 +332,7 @@
 
   .btn-camera { background: white; color: var(--viva-green); padding: 10px; font-size: 13px; border: 1px dashed var(--viva-green); border-radius: 8px; font-weight: normal; box-shadow: none;}
 
-  .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+  .stats-container { display: grid; grid-template-columns: 1fr; gap: 15px; margin-bottom: 20px; }
   .stat-card { background: var(--panel); padding: 16px; border-radius: 12px; text-align: center; border: 1px solid var(--border); border-top: 4px solid var(--viva-green); box-shadow: 0 4px 10px rgba(0,0,0,0.02);}
   .stat-value { font-size: 1.8rem; font-weight: bold; display: block; color: var(--text); }
   .stat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; font-weight: bold; }
@@ -420,9 +406,7 @@
 <body>
 
 <div id="alertaMemoria">
-    <i class="fas fa-exclamation-triangle"></i> ¡Memoria casi llena! Respalda y limpia para evitar fallas.
-    <br>
-    <button onclick="exportarPDF()"><i class="fas fa-file-pdf"></i> RESPALDAR AHORA</button>
+    <i class="fas fa-exclamation-triangle"></i> ¡Memoria casi llena! Por favor, limpia tu historial para evitar fallas.
 </div>
 
 <div id="visorImg" class="modal-overlay" onclick="cerrarVisor()">
@@ -493,14 +477,34 @@
     <h1><i class="fas fa-cogs"></i> Maestro de Listas</h1>
     <label>Lista a editar</label>
     <select id="selectTipoConfig" onchange="renderEditor()" style="margin-bottom: 15px;">
-        <option value="PrimerDescanso">Primer Descanso</option>
-        <option value="SegundoDescanso">Segundo Descanso</option>
-        <option value="TercerDescanso">Tercer Descanso</option>
-        <option value="CuartoDescanso">Cuarto día antes de trabajar</option>
-        <option value="Manana">Bloque: Mañana</option>
-        <option value="Tarde">Bloque: Tarde</option>
-        <option value="Noche">Bloque: Noche</option>
-        <option value="Extras">Bloque: Extras</option>
+        <optgroup label="Día 1: Primer Descanso">
+            <option value="PrimerDescanso">Lista Principal (Día 1)</option>
+            <option value="PrimerDescanso_Manana">Bloque: Mañana</option>
+            <option value="PrimerDescanso_Tarde">Bloque: Tarde</option>
+            <option value="PrimerDescanso_Noche">Bloque: Noche</option>
+            <option value="PrimerDescanso_Extras">Bloque: Extras</option>
+        </optgroup>
+        <optgroup label="Día 2: Segundo Descanso">
+            <option value="SegundoDescanso">Lista Principal (Día 2)</option>
+            <option value="SegundoDescanso_Manana">Bloque: Mañana</option>
+            <option value="SegundoDescanso_Tarde">Bloque: Tarde</option>
+            <option value="SegundoDescanso_Noche">Bloque: Noche</option>
+            <option value="SegundoDescanso_Extras">Bloque: Extras</option>
+        </optgroup>
+        <optgroup label="Día 3: Tercer Descanso">
+            <option value="TercerDescanso">Lista Principal (Día 3)</option>
+            <option value="TercerDescanso_Manana">Bloque: Mañana</option>
+            <option value="TercerDescanso_Tarde">Bloque: Tarde</option>
+            <option value="TercerDescanso_Noche">Bloque: Noche</option>
+            <option value="TercerDescanso_Extras">Bloque: Extras</option>
+        </optgroup>
+        <optgroup label="Día 4: Cuarto Descanso">
+            <option value="CuartoDescanso">Lista Principal (Día 4)</option>
+            <option value="CuartoDescanso_Manana">Bloque: Mañana</option>
+            <option value="CuartoDescanso_Tarde">Bloque: Tarde</option>
+            <option value="CuartoDescanso_Noche">Bloque: Noche</option>
+            <option value="CuartoDescanso_Extras">Bloque: Extras</option>
+        </optgroup>
     </select>
       
     <div id="editorTareas" style="max-height: 400px; overflow-y: auto; margin-bottom: 15px; padding: 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--panel);"></div>
@@ -518,8 +522,8 @@
     <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 15px;">
       <button onclick="seleccionarJornada('PrimerDescanso')" style="padding: 16px;"><i class="fas fa-coffee"></i> Primer Descanso</button>
       <button onclick="seleccionarJornada('SegundoDescanso')" style="background: #1e293b; padding: 16px;"><i class="fas fa-couch"></i> Segundo Descanso</button>
-      <button onclick="seleccionarJornada('TercerDescanso')" class="btn-outline" style="color: var(--text); border-color: var(--border); padding: 16px;"><i class="fas fa-gamepad"></i> Tercer Descanso</button>
-      <button onclick="seleccionarJornada('CuartoDescanso')" class="btn-outline" style="color: var(--text); border-color: var(--border); padding: 16px;"><i class="fas fa-briefcase"></i> Cuarto día antes de trabajar</button>
+      <button onclick="seleccionarJornada('TercerDescanso')" style="background: #0ea5e9; padding: 16px;"><i class="fas fa-gamepad"></i> Tercer Descanso</button>
+      <button onclick="seleccionarJornada('CuartoDescanso')" style="background: #8b5cf6; padding: 16px;"><i class="fas fa-briefcase"></i> Cuarto día antes de trabajar</button>
     </div>
     
     <div class="action-bottom-bar">
@@ -583,13 +587,11 @@
 
     <div class="stats-container">
       <div class="stat-card"><span class="stat-label">Días Registrados</span><span id="statJornadas" class="stat-value">0</span></div>
-      <div class="stat-card"><span class="stat-label">Con Extras</span><span id="statExtra" class="stat-value">0</span></div>
     </div>
     
     <div id="listaHistorial"></div>
     
     <div class="action-bottom-bar">
-        <button onclick="exportarPDF()" class="btn-success" style="padding: 14px;"><i class="fas fa-file-pdf"></i> Generar Reporte PDF</button>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
             <button onclick="nuevaJornada()" class="btn-outline"><i class="fas fa-plus"></i> Nuevo Día</button>
             <button onclick="eliminarHistorial()" class="btn-danger"><i class="fas fa-trash-alt"></i> Limpiar Mes</button>
@@ -637,58 +639,49 @@
 </main>
 
 <script>
-// --- DATOS ACTUALIZADOS ---
+// --- DATOS ACTUALIZADOS: CADA DÍA TIENE SUS BLOQUES ---
 const listasDescanso = [
-    "Dormir 8 hrs",
-    "Lavar trastes",
-    "Lavarse dientes después de comer",
-    "Lavar dientes al despertar",
-    "Bañarse antes dormir",
-    "Lavar dientes al despertar ", 
-    "1 comida saludable",
-    "2 comida saludable",
-    "Dormir antes de la 1 am",
-    "Jugar con el niño",
-    "Enseñarle algo nuevo al niño",
-    "Darle un beso a mi esposa en la frente"
+    "Dormir 8 hrs", "Lavar trastes", "Lavarse dientes después de comer",
+    "Lavar dientes al despertar", "Bañarse antes dormir", "Lavar dientes al despertar ", 
+    "1 comida saludable", "2 comida saludable", "Dormir antes de la 1 am",
+    "Jugar con el niño", "Enseñarle algo nuevo al niño", "Darle un beso a mi esposa en la frente"
 ];
 
+const baseManana = ["Hacer ejercicio", "Lavarse los dientes", "Afeitarse", "Lavar trastes", "lavar ropa", "comer saludable", "lavarse los dientes"];
+const baseTarde = ["jugar con mi hijo", "comer saludable", "ir por despensa", "doblar ropa", "organizar algo", "lavarse los dientes"];
+const baseNoche = ["Cenar saludable", "bañarse", "lavarse los dientes", "limpiar mesa", "organizar algo", "revisar correo y horarios (work)", "oler rico"];
+const baseExtras = ["estudiar algo nuevo", "repasar algo"];
+
 const checklistsBase = {
-  PrimerDescanso: [...listasDescanso],
-  SegundoDescanso: [...listasDescanso],
-  TercerDescanso: [...listasDescanso],
-  CuartoDescanso: [...listasDescanso],
   Extra: ["Actividad Extra"],
-  Manana: [
-    "Hacer ejercicio",
-    "Lavarse los dientes",
-    "Afeitarse",
-    "Lavar trastes",
-    "lavar ropa",
-    "comer saludable",
-    "lavarse los dientes"
-  ],
-  Tarde: [
-    "jugar con mi hijo",
-    "comer saludable",
-    "ir por despensa",
-    "doblar ropa",
-    "organizar algo",
-    "lavarse los dientes"
-  ],
-  Noche: [
-    "Cenar saludable",
-    "bañarse",
-    "lavarse los dientes",
-    "limpiar mesa",
-    "organizar algo",
-    "revisar correo y horarios (work)",
-    "oler rico"
-  ],
-  Extras: [
-    "estudiar algo nuevo",
-    "repasar algo"
-  ]
+  
+  // DÍA 1
+  PrimerDescanso: [...listasDescanso],
+  PrimerDescanso_Manana: [...baseManana],
+  PrimerDescanso_Tarde: [...baseTarde],
+  PrimerDescanso_Noche: [...baseNoche],
+  PrimerDescanso_Extras: [...baseExtras],
+
+  // DÍA 2
+  SegundoDescanso: [...listasDescanso],
+  SegundoDescanso_Manana: [...baseManana],
+  SegundoDescanso_Tarde: [...baseTarde],
+  SegundoDescanso_Noche: [...baseNoche],
+  SegundoDescanso_Extras: [...baseExtras],
+
+  // DÍA 3
+  TercerDescanso: [...listasDescanso],
+  TercerDescanso_Manana: [...baseManana],
+  TercerDescanso_Tarde: [...baseTarde],
+  TercerDescanso_Noche: [...baseNoche],
+  TercerDescanso_Extras: [...baseExtras],
+
+  // DÍA 4
+  CuartoDescanso: [...listasDescanso],
+  CuartoDescanso_Manana: [...baseManana],
+  CuartoDescanso_Tarde: [...baseTarde],
+  CuartoDescanso_Noche: [...baseNoche],
+  CuartoDescanso_Extras: [...baseExtras]
 };
 
 let misChecklists = checklistsBase;
@@ -708,21 +701,28 @@ window.onload = async function() {
         storeName: 'datos_hogar'
     });
 
-    // Forzamos la estructura nueva limpiando la anterior
-    await localforage.removeItem("configChecklistsQC");
-    await localforage.setItem("configChecklistsQC", checklistsBase);
-    misChecklists = checklistsBase;
+    // Cargar listas personalizadas o resetear si es una versión anterior a la separación de días
+    let configuracionGuardada = await localforage.getItem("configChecklistsQC");
+    if (!configuracionGuardada || !configuracionGuardada.PrimerDescanso_Manana) {
+        await localforage.setItem("configChecklistsQC", checklistsBase);
+        misChecklists = checklistsBase;
+    } else {
+        misChecklists = configuracionGuardada;
+    }
     
     const sesionGuardada = await localforage.getItem("sesion_activa_qc");
     if (sesionGuardada) {
         if(confirm("⚠️ Tienes un registro de día en curso. ¿Deseas retomarlo?")) {
             sesionActual = sesionGuardada;
             
-            // Reparamos a 4 bloques por si venía de la versión de 1 bloque
+            // Reparamos si no traía los nuevos bloques
             if (!sesionActual.liberacionItems || !sesionActual.liberacionItems[2]) {
+                const tipoActivo = sesionActual.tipo || "PrimerDescanso";
                 sesionActual.liberacionItems = {
-                    1: [...misChecklists.Manana], 2: [...misChecklists.Tarde],
-                    3: [...misChecklists.Noche], 4: [...misChecklists.Extras]
+                    1: [...(misChecklists[tipoActivo + "_Manana"] || baseManana)], 
+                    2: [...(misChecklists[tipoActivo + "_Tarde"] || baseTarde)],
+                    3: [...(misChecklists[tipoActivo + "_Noche"] || baseNoche)], 
+                    4: [...(misChecklists[tipoActivo + "_Extras"] || baseExtras)]
                 };
                 sesionActual.matriculas = { 1: "MAÑANA (8am - 12pm)", 2: "TARDE (12pm - 5pm)", 3: "NOCHE (5pm - 10pm)", 4: "EXTRAS" };
                 sesionActual.liberacionChecks = { 1: [], 2: [], 3: [], 4: [] };
@@ -782,6 +782,9 @@ function renderEditor() {
     const tipo = document.getElementById("selectTipoConfig").value;
     const contenedor = document.getElementById("editorTareas");
     contenedor.innerHTML = "";
+    
+    if(!misChecklists[tipo]) misChecklists[tipo] = []; // Seguro
+    
     misChecklists[tipo].forEach((tarea, index) => {
         contenedor.innerHTML += `
             <div class="editor-item" style="display:flex; gap:8px; margin-bottom:10px;">
@@ -843,8 +846,10 @@ function inicializarSesion(tipo, esExtraStr) {
         tareas: tareasIniciales.map(t => ({ texto: t, hecho: false, hora: null })),
         liberacionChecks: { 1: [], 2: [], 3: [], 4: [] },
         liberacionItems: {
-            1: [...misChecklists.Manana], 2: [...misChecklists.Tarde],
-            3: [...misChecklists.Noche], 4: [...misChecklists.Extras]
+            1: [...(misChecklists[tipo + "_Manana"] || [])], 
+            2: [...(misChecklists[tipo + "_Tarde"] || [])],
+            3: [...(misChecklists[tipo + "_Noche"] || [])], 
+            4: [...(misChecklists[tipo + "_Extras"] || [])]
         },
         matriculas: { 1: "MAÑANA (8am - 12pm)", 2: "TARDE (12pm - 5pm)", 3: "NOCHE (5pm - 10pm)", 4: "EXTRAS" },
         matriculasHoras: { 1: null, 2: null, 3: null, 4: null },
@@ -918,9 +923,6 @@ function renderizarChecklistDesdeSesion() {
                     <span class="checkmark"></span>
                     <span class="task-text">${itemObj.texto} <small id="hora${index}">${itemObj.hora ? ' ✔ '+itemObj.hora : ''}</small></span>
                 </label>
-                <button type="button" class="btn-outline" style="margin: 0; padding: 0; width: 40px; height: 40px; border-radius: 8px; border-color: var(--border); color: var(--text); flex-shrink: 0;" onclick="crearAlarma('${itemObj.texto}')" title="Programar Alarma">
-                    <i class="fas fa-bell"></i>
-                </button>
             `;
         }
         contenedor.innerHTML += `<div>${contenidoItem}</div>`;
@@ -993,45 +995,6 @@ function renderizarChecklistDesdeSesion() {
     }
     document.getElementById("observacionesTurno").value = sesionActual.observaciones || "";
     renderGaleriaObservaciones();
-}
-
-function crearAlarma(nombreTarea) {
-    const minutosStr = prompt("¿En cuántos minutos necesitas que suene la alarma para: " + nombreTarea + "?", "15");
-    if (!minutosStr || isNaN(minutosStr)) return;
-    
-    const minutos = parseInt(minutosStr);
-    const ahora = new Date();
-    const inicio = new Date(ahora.getTime() + minutos * 60000);
-    const fin = new Date(inicio.getTime() + 15 * 60000); 
-
-    const formatICSDate = (date) => {
-        return date.toISOString().replace(/-|:|\.\d+/g, '').substring(0, 15) + 'Z';
-    };
-
-    const icsContent = `BEGIN:VCALENDAR
-VERSION:2.0
-BEGIN:VEVENT
-SUMMARY:Recordatorio: ${nombreTarea}
-DTSTART:${formatICSDate(inicio)}
-DTEND:${formatICSDate(fin)}
-DESCRIPTION:Recordatorio programado desde Seguimiento Diario
-BEGIN:VALARM
-TRIGGER:-PT0M
-ACTION:DISPLAY
-DESCRIPTION:Reminder
-END:VALARM
-END:VEVENT
-END:VCALENDAR`;
-
-    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'alarma.ics');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
 }
 
 // --- EDICIÓN DE LIBERACIÓN Y ORDENAMIENTO ---
@@ -1354,7 +1317,7 @@ async function cargarHistorialMensual() {
   const historial = await localforage.getItem(mesClave) || [];
   
   document.getElementById("statJornadas").innerText = historial.length;
-  document.getElementById("statExtra").innerText = historial.filter(r => r.tiempoExtra === "SI").length;
+  
   const contenedor = document.getElementById("listaHistorial");
   
   if (historial.length === 0) { contenedor.innerHTML = "<div style='text-align:center; padding:40px 20px; color:var(--muted); background:var(--panel); border:1px solid var(--border); border-radius:12px;'><i class='fas fa-folder-open fa-3x' style='margin-bottom:15px; opacity:0.5;'></i><br>Aún no hay registros en este mes.</div>"; return; }
@@ -1380,88 +1343,6 @@ async function cargarHistorialMensual() {
         <button onclick="eliminarRegistro(${i})" class="btn-danger" style="padding:10px; flex:1;"><i class="fas fa-trash"></i> Borrar</button>
       </div>
     </div>`).join("");
-}
-
-async function exportarPDF(){
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  const ahora = new Date();
-  const mesClave = `historialQC_${ahora.getFullYear()}-${String(ahora.getMonth()+1).padStart(2,"0")}`;
-  const h = await localforage.getItem(mesClave) || [];
-  if(h.length === 0){ alert("Aún no hay datos para exportar."); return; }
-
-  doc.setFontSize(18); doc.setTextColor(16, 185, 129);
-  doc.text("REPORTE MENSUAL DE ACTIVIDADES", 14, 20);
-  
-  doc.setFontSize(10); doc.setTextColor(100, 100, 100);
-  doc.text(`Generado el: ${ahora.toLocaleDateString()} a las ${ahora.toLocaleTimeString()}`, 14, 26);
-
-  const body = h.map(r => [
-    r.fecha + "\n(" + r.horaFin + ")", 
-    r.jornada + (r.matriculas ? "\n\n" + r.matriculas.map(m => "• " + m.id + " (" + m.hora + ")").join("\n") : ""), 
-    r.observaciones || "Sin novedades."
-  ]);
-
-  doc.autoTable({
-    startY: 35,
-    head: [['Día y Fin', 'Etapas del Día', 'Observaciones']],
-    body: body,
-    styles: { fontSize: 9, cellPadding: 4, font: 'helvetica' },
-    headStyles: { fillColor: [16, 185, 129], textColor: [255,255,255], fontStyle: 'bold' },
-    columnStyles: { 0: {cellWidth: 40}, 1: {cellWidth: 60} },
-    alternateRowStyles: { fillColor: [240, 253, 244] }
-  });
-
-  h.forEach((reg, index) => {
-      let allPhotos = [];
-      if(reg.matriculas && Array.isArray(reg.matriculas)){
-          reg.matriculas.forEach(m => {
-             if(m.fotos && m.fotos.length > 0) {
-                 m.fotos.forEach((f, i) => { allPhotos.push({ src: f, label: `Evidencia Etapa: ${m.id} (Foto ${i+1})` }); });
-             }
-          });
-      }
-      if(reg.fotosObservaciones && Array.isArray(reg.fotosObservaciones)){
-          reg.fotosObservaciones.forEach((f, i) => { allPhotos.push({ src: f, label: `Evidencia Observación (Foto ${i+1})` }); });
-      }
-      
-      if(allPhotos.length > 0) {
-          doc.addPage(); 
-          doc.setFontSize(14); doc.setTextColor(51, 65, 85);
-          doc.text(`Anexo Fotográfico - ${reg.fecha}`, 14, 15);
-          let yPos = 25;
-          const pageHeight = doc.internal.pageSize.height;
-          
-          allPhotos.forEach(photo => {
-              try {
-                const props = doc.getImageProperties(photo.src);
-                let pdfImgWidth = 170; 
-                let pdfImgHeight = (props.height * pdfImgWidth) / props.width;
-                
-                const maxPdfHeight = 240;
-                if (pdfImgHeight > maxPdfHeight) {
-                    pdfImgHeight = maxPdfHeight;
-                    pdfImgWidth = (props.width * pdfImgHeight) / props.height;
-                }
-
-                if (yPos + pdfImgHeight > pageHeight - 10) { doc.addPage(); yPos = 20; }
-                
-                const xPos = 20 + (170 - pdfImgWidth) / 2;
-
-                doc.setFontSize(10); doc.setTextColor(100,100,100);
-                doc.text(photo.label, 20, yPos - 3);
-                
-                doc.addImage(photo.src, 'JPEG', xPos, yPos, pdfImgWidth, pdfImgHeight);
-                doc.setDrawColor(200); doc.setLineWidth(0.5); doc.rect(xPos, yPos, pdfImgWidth, pdfImgHeight);
-                
-                yPos += pdfImgHeight + 15;
-              } catch(e) { console.error("Error al procesar la imagen para el PDF", e); }
-          });
-      }
-  });
-  doc.save(`Reporte_Diario_${mesClave}.pdf`);
-  
-  document.getElementById("alertaMemoria").style.display = "none";
 }
 
 function filtrarHistorial() {
@@ -1501,7 +1382,7 @@ async function nuevaJornada(){
 }
 
 async function eliminarHistorial(){
-  if(confirm("⚠️ ¿Estás completamente seguro de borrar TODO el mes? Asegúrate de haber guardado tu PDF de respaldo primero.")){
+  if(confirm("⚠️ ¿Estás completamente seguro de borrar TODO el mes?")){
     const mesClave = `historialQC_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`;
     await localforage.removeItem(mesClave);
     cargarHistorialMensual();
