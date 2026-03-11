@@ -701,6 +701,13 @@ let modoEdicionActivo = false;
 
 // --- INICIO Y RESTAURACIÓN ---
 window.onload = async function() {
+    
+    // --- INTEGRACIÓN: CONFIGURACIÓN DE SEGURIDAD HOGAR ---
+    localforage.config({
+        name: 'App_Hogar_Gabriel',
+        storeName: 'datos_hogar'
+    });
+
     // Forzamos la estructura nueva limpiando la anterior
     await localforage.removeItem("configChecklistsQC");
     await localforage.setItem("configChecklistsQC", checklistsBase);
