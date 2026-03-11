@@ -1,0 +1,16 @@
+{
+  "name": "Seguimiento Diario Gabriel",
+  "short_name": "MiAgenda",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#f0fdf4",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/4345/4345573.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
