@@ -639,7 +639,7 @@
 </main>
 
 <script>
-// --- DATOS ACTUALIZADOS: CADA DÍA TIENE SUS BLOQUES ---
+// --- DATOS ACTUALIZADOS ---
 const listasDescanso = [
     "Dormir 8 hrs", "Lavar trastes", "Lavarse dientes después de comer",
     "Lavar dientes al despertar", "Bañarse antes dormir", "Lavar dientes al despertar ", 
@@ -654,34 +654,10 @@ const baseExtras = ["estudiar algo nuevo", "repasar algo"];
 
 const checklistsBase = {
   Extra: ["Actividad Extra"],
-  
-  // DÍA 1
-  PrimerDescanso: [...listasDescanso],
-  PrimerDescanso_Manana: [...baseManana],
-  PrimerDescanso_Tarde: [...baseTarde],
-  PrimerDescanso_Noche: [...baseNoche],
-  PrimerDescanso_Extras: [...baseExtras],
-
-  // DÍA 2
-  SegundoDescanso: [...listasDescanso],
-  SegundoDescanso_Manana: [...baseManana],
-  SegundoDescanso_Tarde: [...baseTarde],
-  SegundoDescanso_Noche: [...baseNoche],
-  SegundoDescanso_Extras: [...baseExtras],
-
-  // DÍA 3
-  TercerDescanso: [...listasDescanso],
-  TercerDescanso_Manana: [...baseManana],
-  TercerDescanso_Tarde: [...baseTarde],
-  TercerDescanso_Noche: [...baseNoche],
-  TercerDescanso_Extras: [...baseExtras],
-
-  // DÍA 4
-  CuartoDescanso: [...listasDescanso],
-  CuartoDescanso_Manana: [...baseManana],
-  CuartoDescanso_Tarde: [...baseTarde],
-  CuartoDescanso_Noche: [...baseNoche],
-  CuartoDescanso_Extras: [...baseExtras]
+  PrimerDescanso: [...listasDescanso], PrimerDescanso_Manana: [...baseManana], PrimerDescanso_Tarde: [...baseTarde], PrimerDescanso_Noche: [...baseNoche], PrimerDescanso_Extras: [...baseExtras],
+  SegundoDescanso: [...listasDescanso], SegundoDescanso_Manana: [...baseManana], SegundoDescanso_Tarde: [...baseTarde], SegundoDescanso_Noche: [...baseNoche], SegundoDescanso_Extras: [...baseExtras],
+  TercerDescanso: [...listasDescanso], TercerDescanso_Manana: [...baseManana], TercerDescanso_Tarde: [...baseTarde], TercerDescanso_Noche: [...baseNoche], TercerDescanso_Extras: [...baseExtras],
+  CuartoDescanso: [...listasDescanso], CuartoDescanso_Manana: [...baseManana], CuartoDescanso_Tarde: [...baseTarde], CuartoDescanso_Noche: [...baseNoche], CuartoDescanso_Extras: [...baseExtras]
 };
 
 let misChecklists = checklistsBase;
@@ -692,30 +668,27 @@ let fotosEditando = [];
 let sesionActual = null;
 let modoEdicionActivo = false; 
 
-// --- INICIO Y RESTAURACIÓN ---
+// --- INICIO Y RESTAURACIÓN (LLAVES ÚNICAS PARA HOGAR) ---
 window.onload = async function() {
     
-    // --- INTEGRACIÓN: CONFIGURACIÓN DE SEGURIDAD HOGAR ---
     localforage.config({
         name: 'App_Hogar_Gabriel',
         storeName: 'datos_hogar'
     });
 
-    // Cargar listas personalizadas o resetear si es una versión anterior a la separación de días
-    let configuracionGuardada = await localforage.getItem("configChecklistsQC");
+    let configuracionGuardada = await localforage.getItem("configChecklistsHogar");
     if (!configuracionGuardada || !configuracionGuardada.PrimerDescanso_Manana) {
-        await localforage.setItem("configChecklistsQC", checklistsBase);
+        await localforage.setItem("configChecklistsHogar", checklistsBase);
         misChecklists = checklistsBase;
     } else {
         misChecklists = configuracionGuardada;
     }
     
-    const sesionGuardada = await localforage.getItem("sesion_activa_qc");
+    const sesionGuardada = await localforage.getItem("sesion_activa_hogar");
     if (sesionGuardada) {
         if(confirm("⚠️ Tienes un registro de día en curso. ¿Deseas retomarlo?")) {
             sesionActual = sesionGuardada;
             
-            // Reparamos si no traía los nuevos bloques
             if (!sesionActual.liberacionItems || !sesionActual.liberacionItems[2]) {
                 const tipoActivo = sesionActual.tipo || "PrimerDescanso";
                 sesionActual.liberacionItems = {
@@ -735,7 +708,7 @@ window.onload = async function() {
             document.getElementById("pantallaChecklist").style.display = "block";
             renderizarChecklistDesdeSesion();
         } else {
-            await localforage.removeItem("sesion_activa_qc");
+            await localforage.removeItem("sesion_activa_hogar");
         }
     }
     
@@ -747,8 +720,7 @@ window.onload = async function() {
 async function verificarMemoria() {
     try {
         let mostrarAlerta = false;
-        
-        const mesClave = `historialQC_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`;
+        const mesClave = `historialHogar_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`;
         const historial = await localforage.getItem(mesClave);
         if (historial) {
             let totalFotos = 0;
@@ -758,80 +730,62 @@ async function verificarMemoria() {
             });
             if (totalFotos >= 45) mostrarAlerta = true; 
         }
-
         if (navigator.storage && navigator.storage.estimate) {
             const estimate = await navigator.storage.estimate();
-            const porcentaje = (estimate.usage / estimate.quota) * 100;
-            if (porcentaje > 85) mostrarAlerta = true;
+            if ((estimate.usage / estimate.quota) * 100 > 85) mostrarAlerta = true;
         }
-
-        const banner = document.getElementById("alertaMemoria");
-        banner.style.display = mostrarAlerta ? "block" : "none";
-        
-    } catch(e) { console.error("Error al verificar memoria:", e); }
+        document.getElementById("alertaMemoria").style.display = mostrarAlerta ? "block" : "none";
+    } catch(e) { console.error(e); }
 }
 
-// --- CONFIG MAESTRA ---
+// --- CONFIG ---
 function irAConfig() {
     document.getElementById("pantallaInicio").style.display = "none";
     document.getElementById("pantallaConfig").style.display = "block";
     renderEditor();
 }
-
 function renderEditor() {
     const tipo = document.getElementById("selectTipoConfig").value;
     const contenedor = document.getElementById("editorTareas");
     contenedor.innerHTML = "";
-    
-    if(!misChecklists[tipo]) misChecklists[tipo] = []; // Seguro
-    
+    if(!misChecklists[tipo]) misChecklists[tipo] = [];
     misChecklists[tipo].forEach((tarea, index) => {
         contenedor.innerHTML += `
             <div class="editor-item" style="display:flex; gap:8px; margin-bottom:10px;">
                 <input type="text" value="${tarea}" onchange="actualizarTarea('${tipo}', ${index}, this.value)" style="margin:0; padding:12px;">
                 <button onclick="eliminarTarea('${tipo}', ${index})" class="btn-del-task" style="width:45px; height:auto; margin:0;"><i class="fas fa-trash"></i></button>
-            </div>
-        `;
+            </div>`;
     });
 }
 function actualizarTarea(tipo, index, valor) { misChecklists[tipo][index] = valor; }
 function eliminarTarea(tipo, index) { misChecklists[tipo].splice(index, 1); renderEditor(); }
 function agregarTarea() { const tipo = document.getElementById("selectTipoConfig").value; misChecklists[tipo].push("Nuevo ítem..."); renderEditor(); }
 async function guardarConfig() {
-    await localforage.setItem("configChecklistsQC", misChecklists);
+    await localforage.setItem("configChecklistsHogar", misChecklists);
     alert("✅ Listas maestras actualizadas.");
 }
-function volverAlInicioDesdeConfig() {
-    document.getElementById("pantallaConfig").style.display = "none";
-    document.getElementById("pantallaInicio").style.display = "block";
-}
+function volverAlInicioDesdeConfig() { document.getElementById("pantallaConfig").style.display = "none"; document.getElementById("pantallaInicio").style.display = "block"; }
 
 // --- FLUJO ---
 document.getElementById("formInicio").addEventListener("submit", async function(e) {
   e.preventDefault();
-  const datos = {
-    // Valores invisibles para mantener la estructura estable
-    nombre: "Gabriel",
-    empleado: "",
-    fecha: document.getElementById("fecha").value,
-    horaEntrada: document.getElementById("horaEntrada").value
-  };
-  await localforage.setItem("colaboradorQC", datos);
+  const datos = { nombre: "Gabriel", empleado: "", fecha: document.getElementById("fecha").value, horaEntrada: document.getElementById("horaEntrada").value };
+  await localforage.setItem("colaboradorHogar", datos);
   document.getElementById("pantallaInicio").style.display = "none";
   document.getElementById("pantallaMenu").style.display = "block";
 });
 
 async function seleccionarJornada(tipo){
-  await localforage.setItem("tipoJornadaQC", tipo);
+  await localforage.setItem("tipoJornadaHogar", tipo);
   document.getElementById("pantallaMenu").style.display = "none";
-  await localforage.setItem("esTiempoExtraQC", "NO");
+  await localforage.setItem("esTiempoExtraHogar", "NO");
   inicializarSesion(tipo, "NO");
 }
 
 async function seleccionarTiempoExtra(esExtra){
   const strExtra = esExtra ? "SI" : "NO";
-  await localforage.setItem("esTiempoExtraQC", strExtra);
-  const tipo = await localforage.getItem("tipoJornadaQC");
+  await localforage.setItem("esTiempoExtraHogar", strExtra);
+  const tipo = await localforage.getItem("tipoJornadaHogar");
   document.getElementById("pantallaTiempoExtra").style.display = "none";
   inicializarSesion(tipo, strExtra);
 }
@@ -839,696 +793,160 @@ async function seleccionarTiempoExtra(esExtra){
 function inicializarSesion(tipo, esExtraStr) {
     let tareasIniciales = [...misChecklists[tipo]];
     if(esExtraStr === "SI" && tipo !== "Curso") tareasIniciales = tareasIniciales.concat(misChecklists.Extra);
-
     sesionActual = {
-        tipo: tipo,
-        esExtra: esExtraStr,
+        tipo: tipo, esExtra: esExtraStr,
         tareas: tareasIniciales.map(t => ({ texto: t, hecho: false, hora: null })),
         liberacionChecks: { 1: [], 2: [], 3: [], 4: [] },
-        liberacionItems: {
-            1: [...(misChecklists[tipo + "_Manana"] || [])], 
-            2: [...(misChecklists[tipo + "_Tarde"] || [])],
-            3: [...(misChecklists[tipo + "_Noche"] || [])], 
-            4: [...(misChecklists[tipo + "_Extras"] || [])]
-        },
+        liberacionItems: { 1: [...misChecklists[tipo + "_Manana"]], 2: [...misChecklists[tipo + "_Tarde"]], 3: [...misChecklists[tipo + "_Noche"]], 4: [...misChecklists[tipo + "_Extras"]] },
         matriculas: { 1: "MAÑANA (8am - 12pm)", 2: "TARDE (12pm - 5pm)", 3: "NOCHE (5pm - 10pm)", 4: "EXTRAS" },
         matriculasHoras: { 1: null, 2: null, 3: null, 4: null },
-        observaciones: "",
-        fotosAeronaves: { 1: [], 2: [], 3: [], 4: [] },
-        fotosObservaciones: []
+        observaciones: "", fotosAeronaves: { 1: [], 2: [], 3: [], 4: [] }, fotosObservaciones: []
     };
-    fotosAeronaves = { 1: [], 2: [], 3: [], 4: [] };
-    fotosObservaciones = [];
+    fotosAeronaves = { 1: [], 2: [], 3: [], 4: [] }; fotosObservaciones = [];
     document.getElementById("pantallaChecklist").style.display = "block";
-    renderizarChecklistDesdeSesion();
-    guardarProgreso();
+    renderizarChecklistDesdeSesion(); guardarProgreso();
 }
 
-function pausarYVolverInicio() {
-    document.getElementById("pantallaChecklist").style.display = "none";
-    document.getElementById("pantallaMenu").style.display = "block";
-}
-
+function pausarYVolverInicio() { document.getElementById("pantallaChecklist").style.display = "none"; document.getElementById("pantallaMenu").style.display = "block"; }
 function volverInicioDesdeHistorial() {
     document.querySelectorAll("section").forEach(s => s.style.display = "none");
-    if (sesionActual) {
-        document.getElementById("pantallaChecklist").style.display = "block";
-    } else {
-        document.getElementById("pantallaInicio").style.display = "block";
-    }
+    if (sesionActual) document.getElementById("pantallaChecklist").style.display = "block";
+    else document.getElementById("pantallaInicio").style.display = "block";
 }
 
-// --- RENDERIZADO Y MODOS DEL CHECKLIST ---
 function toggleModoEdicion() {
     modoEdicionActivo = !modoEdicionActivo;
     const btn = document.getElementById("btnToggleEdit");
-    const zonaAgregar = document.getElementById("zonaAgregar");
-    
-    if (modoEdicionActivo) {
-        btn.innerHTML = '<i class="fas fa-check"></i> Listo';
-        btn.classList.add("btn-success"); btn.classList.remove("btn-outline");
-        btn.style.color = "white";
-        zonaAgregar.style.display = "block";
-    } else {
-        btn.innerHTML = '<i class="fas fa-pencil-alt"></i> Editar Tareas';
-        btn.classList.add("btn-outline"); btn.classList.remove("btn-success");
-        btn.style.color = "white"; 
-        zonaAgregar.style.display = "none";
-    }
+    if (modoEdicionActivo) { btn.innerHTML = '<i class="fas fa-check"></i> Listo'; btn.classList.add("btn-success"); btn.classList.remove("btn-outline"); document.getElementById("zonaAgregar").style.display = "block"; }
+    else { btn.innerHTML = '<i class="fas fa-pencil-alt"></i> Editar Tareas'; btn.classList.add("btn-outline"); btn.classList.remove("btn-success"); document.getElementById("zonaAgregar").style.display = "none"; }
     renderizarChecklistDesdeSesion();
 }
 
 function renderizarChecklistDesdeSesion() {
-    const contenedor = document.getElementById("listaChecklist");
-    contenedor.innerHTML = "";
-
+    const contenedor = document.getElementById("listaChecklist"); contenedor.innerHTML = "";
     sesionActual.tareas.forEach((itemObj, index) => {
-        let contenidoItem = "";
-        if (modoEdicionActivo) {
-            contenidoItem = `
-                <div style="display:flex; gap:8px; align-items:center; width:100%;">
-                    <div style="display:flex; flex-direction:column; gap:4px;">
-                        <button class="btn-move" style="height:20px; font-size:10px;" onclick="moverTarea(${index}, -1)"><i class="fas fa-chevron-up"></i></button>
-                        <button class="btn-move" style="height:20px; font-size:10px;" onclick="moverTarea(${index}, 1)"><i class="fas fa-chevron-down"></i></button>
-                    </div>
-                    <span style="flex-grow:1; margin-left:10px; font-size:14px;">${itemObj.texto}</span>
-                    <button class="btn-del-task" style="width:40px; height:40px;" onclick="eliminarTareaEnTurno(${index})"><i class="fas fa-trash"></i></button>
-                </div>
-            `;
-        } else {
-            const checked = itemObj.hecho ? "checked" : "";
-            contenidoItem = `
-                <label class="modern-check-container">
-                    <input type="checkbox" id="item${index}" ${checked} onchange="toggleTarea(${index})">
-                    <span class="checkmark"></span>
-                    <span class="task-text">${itemObj.texto} <small id="hora${index}">${itemObj.hora ? ' ✔ '+itemObj.hora : ''}</small></span>
-                </label>
-            `;
-        }
-        contenedor.innerHTML += `<div>${contenidoItem}</div>`;
+        let contenido = modoEdicionActivo ? 
+            `<div style="display:flex; gap:8px; align-items:center; width:100%;">
+                <div style="display:flex; flex-direction:column; gap:4px;"><button class="btn-move" onclick="moverTarea(${index}, -1)">▲</button><button class="btn-move" onclick="moverTarea(${index}, 1)">▼</button></div>
+                <span style="flex-grow:1;">${itemObj.texto}</span><button class="btn-del-task" onclick="eliminarTareaEnTurno(${index})"><i class="fas fa-trash"></i></button>
+            </div>` :
+            `<label class="modern-check-container"><input type="checkbox" ${itemObj.hecho?'checked':''} onchange="toggleTarea(${index})"><span class="checkmark"></span><span class="task-text">${itemObj.texto} <small>${itemObj.hora||''}</small></span></label>`;
+        contenedor.innerHTML += `<div>${contenido}</div>`;
     });
-
-    if (sesionActual.tipo !== "Curso") {
-        contenedor.innerHTML += `<h3 style="margin-top: 35px;"><i class="fas fa-clock"></i> Rutina por Horarios</h3>`;
-        
-        for (let i = 1; i <= 4; i++) {
-            let miniItemsHTML = "";
-            const itemsLibDinamicos = sesionActual.liberacionItems[i];
-            
-            itemsLibDinamicos.forEach((subItem, subIndex) => {
-                const isChecked = sesionActual.liberacionChecks[i] && sesionActual.liberacionChecks[i].includes(subIndex) ? "checked" : "";
-                
-                let btnBotonesEdicion = "";
-                if (modoEdicionActivo) {
-                    btnBotonesEdicion = `
-                        <div style="display:flex; gap:4px; margin-left:auto; flex-shrink:0;">
-                            <button class="btn-move" style="width:28px; height:28px;" onclick="moverPendienteLiberacion(${i}, ${subIndex}, -1)"><i class="fas fa-angle-up"></i></button>
-                            <button class="btn-move" style="width:28px; height:28px;" onclick="moverPendienteLiberacion(${i}, ${subIndex}, 1)"><i class="fas fa-angle-down"></i></button>
-                            <button class="btn-outline" style="width:28px; height:28px; padding:0; margin:0;" onclick="editarPendienteLiberacion(${i}, ${subIndex})"><i class="fas fa-pencil-alt"></i></button>
-                            <button class="btn-del-task" style="width:28px; height:28px;" onclick="eliminarPendienteLiberacion(${i}, ${subIndex})"><i class="fas fa-times"></i></button>
-                        </div>
-                    `;
-                }
-
-                miniItemsHTML += `
-                    <div class="mini-option">
-                        <label class="modern-check-container mini" style="flex-grow:1;">
-                            <input type="checkbox" class="sub-check-${i}" data-idx="${subIndex}" ${isChecked} onchange="verificarEstadoLiberacion(${i})">
-                            <span class="checkmark"></span>
-                            <span class="task-text">${subItem}</span>
-                        </label>
-                        ${btnBotonesEdicion}
-                    </div>
-                `;
-            });
-            
-            miniItemsHTML += `
-                <div style="text-align: right; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px;">
-                    <span style="font-size: 13px; color: var(--accent); cursor: pointer; font-weight: bold;" onclick="agregarPendienteLiberacion(${i})"><i class="fas fa-plus-circle"></i> Agregar actividad</span>
-                </div>
-            `;
-
-            const valMat = sesionActual.matriculas[i] || "";
-            const estadoTexto = sesionActual.matriculasHoras[i] ? `¡LISTO! ${sesionActual.matriculasHoras[i]}` : "EN PROGRESO...";
-            const colorEstado = sesionActual.matriculasHoras[i] ? "var(--success)" : "var(--neon-red)";
-            const claseCard = sesionActual.matriculasHoras[i] ? "check-item-lib liberado-ok" : "check-item-lib";
-
-            contenedor.innerHTML += `
-            <div class="${claseCard}" id="cardAeronave${i}">
-              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--border); padding-bottom:8px;">
-                 <input type="text" id="matEquipo${i}" value="${valMat}" placeholder="ETAPA DEL DÍA" oninput="updateMatricula(${i}, this.value)" style="border:none; flex-grow:1;">
-                 <span id="tsLib${i}" style="font-size:11px; color:${colorEstado}; font-weight:bold;">${estadoTexto}</span>
-              </div>
-              
-              <div class="mini-grid">${miniItemsHTML}</div>
-              
-              <div style="margin-top:10px; border-top: 1px dashed var(--border); padding-top:10px;">
-                  <button type="button" class="btn-camera" onclick="document.getElementById('file${i}').click()">
-                    <i class="fas fa-camera"></i> Evidencia Etapa
-                  </button>
-                  <input type="file" id="file${i}" accept="image/*" style="display:none" onchange="addFoto(${i})">
-                  <div id="galeria${i}" class="galeria-lib"></div>
-              </div>
-            </div>`;
-            setTimeout(() => renderGaleria(i), 0);
-        }
+    contenedor.innerHTML += `<h3><i class="fas fa-clock"></i> Rutina por Horarios</h3>`;
+    for (let i = 1; i <= 4; i++) {
+        let miniHTML = "";
+        sesionActual.liberacionItems[i].forEach((sub, idx) => {
+            const isChecked = sesionActual.liberacionChecks[i].includes(idx) ? "checked" : "";
+            miniHTML += `<div class="mini-option"><label class="modern-check-container mini"><input type="checkbox" class="sub-check-${i}" data-idx="${idx}" ${isChecked} onchange="verificarEstadoLiberacion(${i})"><span class="checkmark"></span><span class="task-text">${sub}</span></label>
+            ${modoEdicionActivo ? `<button onclick="eliminarPendienteLiberacion(${i},${idx})">×</button>` : ''}</div>`;
+        });
+        const cardClase = sesionActual.matriculasHoras[i] ? "check-item-lib liberado-ok" : "check-item-lib";
+        contenedor.innerHTML += `<div class="${cardClase}" id="cardAeronave${i}"><input type="text" value="${sesionActual.matriculas[i]}" oninput="updateMatricula(${i}, this.value)"><div class="mini-grid">${miniHTML}</div>
+        <button class="btn-camera" onclick="document.getElementById('file${i}').click()">Foto</button><input type="file" id="file${i}" style="display:none" onchange="addFoto(${i})"><div id="galeria${i}" class="galeria-lib"></div></div>`;
+        setTimeout(() => renderGaleria(i), 0);
     }
-    document.getElementById("observacionesTurno").value = sesionActual.observaciones || "";
-    renderGaleriaObservaciones();
-}
-
-// --- EDICIÓN DE LIBERACIÓN Y ORDENAMIENTO ---
-function agregarPendienteLiberacion(idAvion) {
-    const matricula = sesionActual.matriculas[idAvion] ? sesionActual.matriculas[idAvion].toUpperCase() : "Actividad";
-    const texto = prompt("Describe la actividad de la etapa " + matricula + ":");
-    if(texto) {
-        sesionActual.liberacionItems[idAvion].push(texto);
-        renderizarChecklistDesdeSesion();
-        verificarEstadoLiberacion(idAvion); 
-        guardarProgreso();
-    }
-}
-
-function editarPendienteLiberacion(idAvion, subIndex) {
-    const actual = sesionActual.liberacionItems[idAvion][subIndex];
-    const nuevoTexto = prompt("Edita la actividad:", actual);
-    if(nuevoTexto !== null && nuevoTexto.trim() !== "") {
-        sesionActual.liberacionItems[idAvion][subIndex] = nuevoTexto.trim();
-        renderizarChecklistDesdeSesion();
-        guardarProgreso();
-    }
-}
-
-function eliminarPendienteLiberacion(idAvion, subIndex) {
-    if(confirm("¿Eliminar este elemento?")) {
-        sesionActual.liberacionItems[idAvion].splice(subIndex, 1);
-        sesionActual.liberacionChecks[idAvion] = []; 
-        renderizarChecklistDesdeSesion();
-        verificarEstadoLiberacion(idAvion);
-        guardarProgreso();
-    }
-}
-
-function moverPendienteLiberacion(idAvion, index, direccion) {
-    const nuevaPos = index + direccion;
-    const items = sesionActual.liberacionItems[idAvion];
-    
-    if (nuevaPos < 0 || nuevaPos >= items.length) return;
-    
-    const tempTexto = items[index];
-    items[index] = items[nuevaPos];
-    items[nuevaPos] = tempTexto;
-    
-    let checks = sesionActual.liberacionChecks[idAvion] || [];
-    let isCheckedActual = checks.includes(index);
-    let isCheckedNuevo = checks.includes(nuevaPos);
-    
-    checks = checks.filter(idx => idx !== index && idx !== nuevaPos);
-    if (isCheckedActual) checks.push(nuevaPos);
-    if (isCheckedNuevo) checks.push(index);
-    
-    sesionActual.liberacionChecks[idAvion] = checks;
-    
-    renderizarChecklistDesdeSesion();
-    verificarEstadoLiberacion(idAvion);
-    guardarProgreso();
 }
 
 async function guardarProgreso() {
     if(!sesionActual) return;
     sesionActual.observaciones = document.getElementById("observacionesTurno").value;
-    sesionActual.fotosAeronaves = fotosAeronaves;
-    sesionActual.fotosObservaciones = fotosObservaciones;
-    await localforage.setItem("sesion_activa_qc", sesionActual);
-    verificarMemoria(); 
+    sesionActual.fotosAeronaves = fotosAeronaves; sesionActual.fotosObservaciones = fotosObservaciones;
+    await localforage.setItem("sesion_activa_hogar", sesionActual);
+    verificarMemoria();
 }
 
 function toggleTarea(index) {
-    const chk = document.getElementById(`item${index}`);
-    sesionActual.tareas[index].hecho = chk.checked;
-    if (chk.checked) {
-        sesionActual.tareas[index].hora = new Date().toLocaleTimeString();
-    } else {
-        sesionActual.tareas[index].hora = null;
-    }
-    renderizarChecklistDesdeSesion();
-    guardarProgreso();
-}
-
-function moverTarea(index, direccion) {
-    const nuevaPos = index + direccion;
-    if (nuevaPos < 0 || nuevaPos >= sesionActual.tareas.length) return;
-    const temp = sesionActual.tareas[index];
-    sesionActual.tareas[index] = sesionActual.tareas[nuevaPos];
-    sesionActual.tareas[nuevaPos] = temp;
-    renderizarChecklistDesdeSesion();
-    guardarProgreso();
-}
-
-function agregarTareaEnTurno() {
-    const texto = prompt("Nombre de la nueva tarea:");
-    if(texto) { sesionActual.tareas.push({ texto: texto, hecho: false, hora: null }); renderizarChecklistDesdeSesion(); guardarProgreso(); }
-}
-function eliminarTareaEnTurno(index) {
-    if(confirm("¿Eliminar esta tarea del día?")) { sesionActual.tareas.splice(index, 1); renderizarChecklistDesdeSesion(); guardarProgreso(); }
+    sesionActual.tareas[index].hecho = !sesionActual.tareas[index].hecho;
+    sesionActual.tareas[index].hora = sesionActual.tareas[index].hecho ? new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : null;
+    renderizarChecklistDesdeSesion(); guardarProgreso();
 }
 function updateMatricula(i, val) { sesionActual.matriculas[i] = val; guardarProgreso(); }
-
-function verificarEstadoLiberacion(idAvion) {
-    const totalItems = sesionActual.liberacionItems[idAvion].length;
-    const checksDOM = document.querySelectorAll(`.sub-check-${idAvion}`);
-    let marcadosIndices = [];
-    let count = 0;
-    checksDOM.forEach(chk => { if(chk.checked) { marcadosIndices.push(parseInt(chk.dataset.idx)); count++; } });
-    
-    sesionActual.liberacionChecks[idAvion] = marcadosIndices;
-    const card = document.getElementById(`cardAeronave${idAvion}`);
-    const labelEstado = document.getElementById(`tsLib${idAvion}`);
-
-    if (count === totalItems && totalItems > 0) {
-        card.classList.add("liberado-ok");
-        if (!sesionActual.matriculasHoras[idAvion]) { sesionActual.matriculasHoras[idAvion] = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}); }
-        labelEstado.style.color = "var(--success)"; labelEstado.innerText = "¡LISTO! " + sesionActual.matriculasHoras[idAvion];
-    } else {
-        card.classList.remove("liberado-ok");
-        sesionActual.matriculasHoras[idAvion] = null;
-        labelEstado.style.color = "var(--neon-red)"; labelEstado.innerText = "EN PROGRESO (" + count + "/" + totalItems + ")";
-    }
-    guardarProgreso();
+function verificarEstadoLiberacion(i) {
+    const checks = document.querySelectorAll(`.sub-check-${i}`);
+    let m = []; checks.forEach(c => { if(c.checked) m.push(parseInt(c.dataset.idx)); });
+    sesionActual.liberacionChecks[i] = m;
+    if (m.length === sesionActual.liberacionItems[i].length) sesionActual.matriculasHoras[i] = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+    else sesionActual.matriculasHoras[i] = null;
+    renderizarChecklistDesdeSesion(); guardarProgreso();
 }
 
+// --- FOTOS ---
 function addFoto(i) {
-  const fileInput = document.getElementById(`file${i}`);
-  const file = fileInput.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onloadend = function() {
-    const img = new Image();
-    img.src = reader.result;
-    img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const MAX_WIDTH = 800; 
-        const scale = MAX_WIDTH / img.width;
-        canvas.width = MAX_WIDTH;
-        canvas.height = img.height * scale;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        fotosAeronaves[i].push(canvas.toDataURL('image/jpeg', 0.60)); 
-        renderGaleria(i);
-        guardarProgreso(); fileInput.value = ""; 
-    }
-  }
-  reader.readAsDataURL(file);
+  const f = document.getElementById(`file${i}`).files[0];
+  const r = new FileReader(); r.onload = (e) => { fotosAeronaves[i].push(e.target.result); renderGaleria(i); guardarProgreso(); };
+  if(f) r.readAsDataURL(f);
 }
-
-function addFotoObservaciones() {
-  const fileInput = document.getElementById('fileObservaciones');
-  const file = fileInput.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onloadend = function() {
-    const img = new Image();
-    img.src = reader.result;
-    img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const MAX_WIDTH = 800; 
-        const scale = MAX_WIDTH / img.width;
-        canvas.width = MAX_WIDTH;
-        canvas.height = img.height * scale;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        fotosObservaciones.push(canvas.toDataURL('image/jpeg', 0.60)); 
-        renderGaleriaObservaciones();
-        guardarProgreso(); fileInput.value = ""; 
-    }
-  }
-  reader.readAsDataURL(file);
-}
-
-function renderGaleriaObservaciones() {
-  const galeria = document.getElementById('galeriaObservaciones');
-  galeria.innerHTML = fotosObservaciones.map((src, index) => `
-    <div class="img-wrapper"><img src="${src}" class="img-thumb" onclick="verImagenGrande(this.src)"><button class="btn-remove-img" onclick="removeFotoObservaciones(${index})"><i class="fas fa-times"></i></button></div>
-  `).join('');
-}
-function removeFotoObservaciones(index) { fotosObservaciones.splice(index, 1); renderGaleriaObservaciones(); guardarProgreso(); }
-
 function renderGaleria(i) {
-  const galeria = document.getElementById(`galeria${i}`);
-  galeria.innerHTML = fotosAeronaves[i].map((src, index) => `
-    <div class="img-wrapper"><img src="${src}" class="img-thumb" onclick="verImagenGrande(this.src)"><button class="btn-remove-img" onclick="removeFoto(${i}, ${index})"><i class="fas fa-times"></i></button></div>
-  `).join('');
+  const g = document.getElementById(`galeria${i}`);
+  if(g) g.innerHTML = fotosAeronaves[i].map(src => `<img src="${src}" class="img-thumb">`).join("");
 }
-function removeFoto(i, index) { fotosAeronaves[i].splice(index, 1); renderGaleria(i); guardarProgreso(); }
-
-async function validarChecklist() {
-  const tipo = sesionActual.tipo;
-  let matriculasData = [];
-  if (tipo !== "Curso") {
-    for (let i = 1; i <= 4; i++) {
-      const matInput = document.getElementById(`matEquipo${i}`);
-      const mat = matInput.value.trim();
-      const checksFaltantes = document.querySelectorAll(`.sub-check-${i}:not(:checked)`);
-      if (mat !== "") {
-          if (checksFaltantes.length > 0) { alert(`⚠️ La etapa ${mat.toUpperCase()} tiene ${checksFaltantes.length} actividades pendientes.`); return; }
-          const fotosAeronaveExtraidas = Array.isArray(fotosAeronaves[i]) ? [...fotosAeronaves[i]] : [];
-          matriculasData.push({ id: mat.toUpperCase(), hora: sesionActual.matriculasHoras[i] || "--:--", fotos: fotosAeronaveExtraidas });
-      }
-    }
-  }
-  
-  const tareasIncompletas = sesionActual.tareas.some(t => !t.hecho);
-  if (tareasIncompletas) { alert("⚠️ Tareas del día incompletas. Asegúrate de palomear todo."); return; }
-  
-  const colaborador = await localforage.getItem("colaboradorQC");
-  const registro = {
-    nombre: colaborador.nombre, empleado: colaborador.empleado, fecha: colaborador.fecha,
-    jornada: tipo, matriculas: matriculasData, tiempoExtra: sesionActual.esExtra,
-    horaFin: new Date().toLocaleTimeString(), observaciones: document.getElementById("observacionesTurno").value.trim(),
-    fotosObservaciones: [...fotosObservaciones]
-  };
-  
-  const mesClave = `historialQC_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`;
-  const historial = await localforage.getItem(mesClave) || [];
-  historial.push(registro);
-  
-  await localforage.setItem(mesClave, historial);
-  await localforage.removeItem("sesion_activa_qc");
-  sesionActual = null;
-  alert("✅ Vamos con todo un día más siendo mejor que ayer");
-  
-  verificarMemoria(); 
-  irAHistorial();
+function addFotoObservaciones() {
+  const f = document.getElementById('fileObservaciones').files[0];
+  const r = new FileReader(); r.onload = (e) => { fotosObservaciones.push(e.target.result); renderGaleriaObservaciones(); guardarProgreso(); };
+  if(f) r.readAsDataURL(f);
+}
+function renderGaleriaObservaciones() {
+  const g = document.getElementById('galeriaObservaciones');
+  if(g) g.innerHTML = fotosObservaciones.map(src => `<img src="${src}" class="img-thumb">`).join("");
 }
 
-let nivelZoom = 1;
-
-function verImagenGrande(src) {
-    nivelZoom = 1;
-    const img = document.getElementById("imgFull");
-    img.src = src;
-    img.style.transform = `scale(1)`;
-    img.style.cursor = "zoom-in";
-    document.getElementById("visorImg").style.display = "flex";
-}
-
-function hacerZoom(event) {
-    event.stopPropagation(); 
-    const img = document.getElementById("imgFull");
-    
-    if (nivelZoom === 1) {
-        nivelZoom = 2.5; 
-        img.style.cursor = "zoom-out";
-        const rect = img.getBoundingClientRect();
-        const x = ((event.clientX - rect.left) / rect.width) * 100;
-        const y = ((event.clientY - rect.top) / rect.height) * 100;
-        img.style.transformOrigin = `${x}% ${y}%`;
-    } else {
-        nivelZoom = 1; 
-        img.style.cursor = "zoom-in";
-        img.style.transformOrigin = "center center";
-    }
-    img.style.transform = `scale(${nivelZoom})`;
-}
-
-function cerrarVisor() { document.getElementById("visorImg").style.display = "none"; }
-
-async function abrirEditor(indice) {
-    const mesClave = `historialQC_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`;
-    const historial = await localforage.getItem(mesClave);
-    const registro = historial[indice];
-    
-    indiceEditando = indice;
-    document.getElementById("editObservaciones").value = registro.observaciones || "";
-    fotosEditando = registro.fotosObservaciones ? [...registro.fotosObservaciones] : [];
-    renderGaleriaEdicion(); document.getElementById("modalEditor").style.display = "flex";
-}
-function cerrarEditor() { document.getElementById("modalEditor").style.display = "none"; indiceEditando = -1; fotosEditando = []; }
-
-function renderGaleriaEdicion() {
-    const galeria = document.getElementById("editGaleria");
-    galeria.innerHTML = fotosEditando.map((src, index) => `
-        <div class="img-wrapper">
-            <img src="${src}" class="img-thumb" onclick="verImagenGrande(this.src)">
-            <button class="btn-remove-img" onclick="eliminarFotoEdicion(${index})"><i class="fas fa-times"></i></button>
-        </div>
-    `).join('');
-}
-function eliminarFotoEdicion(index) { fotosEditando.splice(index, 1); renderGaleriaEdicion(); }
-
-function addFotoEdicion() {
-  const fileInput = document.getElementById('fileEdit');
-  const file = fileInput.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onloadend = function() {
-    const img = new Image();
-    img.src = reader.result;
-    img.onload = function() {
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const MAX_WIDTH = 800; 
-        const scale = MAX_WIDTH / img.width;
-        canvas.width = MAX_WIDTH;
-        canvas.height = img.height * scale;
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        fotosEditando.push(canvas.toDataURL('image/jpeg', 0.60));
-        renderGaleriaEdicion(); fileInput.value = ""; 
-    }
-  }
-  reader.readAsDataURL(file);
-}
-
-async function guardarEdicion() {
-    if(indiceEditando === -1) return;
-    const mesClave = `historialQC_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`;
-    const historial = await localforage.getItem(mesClave);
-    historial[indiceEditando].observaciones = document.getElementById("editObservaciones").value;
-    historial[indiceEditando].fotosObservaciones = [...fotosEditando];
-    await localforage.setItem(mesClave, historial);
-    alert("✅ Registro actualizado correctamente"); cerrarEditor(); 
-    verificarMemoria();
-    cargarHistorialMensual(); 
-}
-
-async function cargarHistorialMensual() {
-  const ahora = new Date();
-  const mesClave = `historialQC_${ahora.getFullYear()}-${String(ahora.getMonth() + 1).padStart(2, "0")}`;
-  const historial = await localforage.getItem(mesClave) || [];
-  
-  document.getElementById("statJornadas").innerText = historial.length;
-  
-  const contenedor = document.getElementById("listaHistorial");
-  
-  if (historial.length === 0) { contenedor.innerHTML = "<div style='text-align:center; padding:40px 20px; color:var(--muted); background:var(--panel); border:1px solid var(--border); border-radius:12px;'><i class='fas fa-folder-open fa-3x' style='margin-bottom:15px; opacity:0.5;'></i><br>Aún no hay registros en este mes.</div>"; return; }
-  
-  contenedor.innerHTML = historial.map((reg, i) => `
-    <div style="padding:16px; margin-bottom:15px; background:var(--panel); border:1px solid var(--border); border-radius:12px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
-      <div style="display:flex; justify-content:space-between; margin-bottom:10px; align-items:center; border-bottom:1px solid #eee; padding-bottom:8px;">
-        <span style="color:var(--text); font-weight:bold; font-size:15px;">${reg.fecha}</span>
-        <span style="color:var(--muted); background:#f0f0f0; padding:4px 8px; border-radius:8px; font-size:12px; font-weight:bold;"><i class="fas fa-clock"></i> ${reg.horaFin}</span>
-      </div>
-      <strong style="font-size:15px; display:block; margin-bottom:10px; color:var(--viva-green);">${reg.jornada} ${reg.matriculas ? ' <span style="color:var(--text);">[' + reg.matriculas.map(m => m.id).join(', ') + ']</span>' : ''}</strong>
-      ${reg.matriculas ? reg.matriculas.map(m => `
-        <div style="margin-top:10px; background:#f9f9f9; padding:10px; border-radius:8px; border:1px solid #eee;"><small style="color:var(--text); font-weight:bold;"><i class="fas fa-check-circle"></i> ${m.id} (${m.hora})</small>
-          <div style="display:flex; gap:8px; margin-top:8px; overflow-x:auto;">${m.fotos ? m.fotos.map(f => `<img src="${f}" style="height:45px; width:45px; object-fit:cover; border-radius:6px; cursor:zoom-in; border:1px solid #ddd;" onclick="verImagenGrande(this.src)">`).join('') : ''}</div>
-        </div>`).join('') : ''}
-      <div style="margin-top:15px; padding-top:15px; border-top:1px dashed var(--border);">
-          <small style="color:var(--muted); display:block; margin-bottom:6px; font-weight:bold;"><i class="fas fa-comment-alt"></i> Observaciones Generales</small>
-          <p style="font-size:13px; color:var(--text); margin:0; line-height:1.4;">${reg.observaciones || "Sin novedades."}</p>
-          ${reg.fotosObservaciones && reg.fotosObservaciones.length > 0 ? `<div style="display:flex; gap:8px; margin-top:10px; overflow-x:auto;">${reg.fotosObservaciones.map(f => `<img src="${f}" style="height:55px; width:55px; object-fit:cover; border-radius:6px; border:1px solid #ddd; cursor:zoom-in;" onclick="verImagenGrande(this.src)">`).join('')}</div>` : ''}
-      </div>
-      <div style="display:flex; gap:10px; margin-top:15px;">
-        <button onclick="abrirEditor(${i})" class="btn-outline" style="padding:10px; flex:1;"><i class="fas fa-edit"></i> Editar</button>
-        <button onclick="eliminarRegistro(${i})" class="btn-danger" style="padding:10px; flex:1;"><i class="fas fa-trash"></i> Borrar</button>
-      </div>
-    </div>`).join("");
-}
-
-function filtrarHistorial() {
-  const busqueda = document.getElementById("buscadorHistorial").value.toLowerCase();
-  const tarjetas = document.querySelectorAll("#listaHistorial > div");
-  tarjetas.forEach(t => t.style.display = t.innerText.toLowerCase().includes(busqueda) ? "block" : "none");
-}
-
-async function irAHistorial(){
-  document.querySelectorAll("section").forEach(s => s.style.display = "none");
-  document.getElementById("pantallaHistorial").style.display = "block";
-  await cargarHistorialMensual();
-}
-
-async function eliminarRegistro(i) {
-  if(confirm("¿Estás seguro de que deseas eliminar este registro completo?")){
-      const mesClave = `historialQC_${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, "0")}`;
-      let h = await localforage.getItem(mesClave);
-      h.splice(i, 1);
-      await localforage.setItem(mesClave, h);
-      cargarHistorialMensual();
-      verificarMemoria();
-  }
-}
-
-function volverAlInicio(){ document.getElementById("pantallaMenu").style.display = "none"; document.getElementById("pantallaInicio").style.display = "block"; }
-function volverAJornada(){ document.getElementById("pantallaTiempoExtra").style.display = "none"; document.getElementById("pantallaMenu").style.display = "block"; }
-
-async function nuevaJornada(){ 
-    const sesion = await localforage.getItem("sesion_activa_qc");
-    if(sesion){
-        if(confirm("Tienes un día en curso. Si inicias uno nuevo, se perderá tu progreso actual. ¿Estás seguro de continuar?")) {
-            await localforage.removeItem("sesion_activa_qc");
-            location.reload();
-        }
-    } else { location.reload(); }
-}
-
-async function eliminarHistorial(){
-  if(confirm("⚠️ ¿Estás completamente seguro de borrar TODO el mes?")){
-    const mesClave = `historialQC_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`;
-    await localforage.removeItem(mesClave);
+// --- HISTORIAL ---
+async function irAHistorial() {
+    document.querySelectorAll("section").forEach(s => s.style.display = "none");
+    document.getElementById("pantallaHistorial").style.display = "block";
     cargarHistorialMensual();
-    verificarMemoria();
-    alert("✅ El mes ha sido borrado con éxito. Memoria liberada.");
-  }
+}
+async function cargarHistorialMensual() {
+    const clave = `historialHogar_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`;
+    const h = await localforage.getItem(clave) || [];
+    document.getElementById("statJornadas").innerText = h.length;
+    document.getElementById("listaHistorial").innerHTML = h.map(reg => `<div style="background:white; margin-bottom:10px; padding:10px; border-radius:10px; border:1px solid #eee;"><strong>${reg.fecha}</strong> - ${reg.jornada}</div>`).join("");
 }
 
-// --- MÓDULO DE CALENDARIO ---
-let navMes = new Date().getMonth();
-let navAnio = new Date().getFullYear();
-let diaSeleccionado = null;
-
+// --- AGENDA ---
+let navMes = new Date().getMonth(); let navAnio = new Date().getFullYear(); let diaSeleccionado = null;
 async function irAAgenda() {
     document.querySelectorAll("section").forEach(s => s.style.display = "none");
     document.getElementById("pantallaAgenda").style.display = "block";
-    document.getElementById("panelDetalleDia").style.display = "none"; 
-    navMes = new Date().getMonth();
-    navAnio = new Date().getFullYear();
-    await renderizarCalendario();
-}
-
-function volverAlInicioDesdeAgenda() {
-    document.getElementById("pantallaAgenda").style.display = "none";
-    document.getElementById("pantallaInicio").style.display = "block";
-    cargarProximosEventos(); 
-}
-
-function cambiarMes(offset) {
-    navMes += offset;
-    if (navMes < 0) { navMes = 11; navAnio--; }
-    else if (navMes > 11) { navMes = 0; navAnio++; }
-    document.getElementById("panelDetalleDia").style.display = "none";
     renderizarCalendario();
 }
-
+function cambiarMes(offset) { navMes += offset; if(navMes<0){navMes=11; navAnio--;} else if(navMes>11){navMes=0; navAnio++;} renderizarCalendario(); }
 async function renderizarCalendario() {
-    const grid = document.getElementById("diasCalendario");
-    const mesTitulo = document.getElementById("mesAnioCalendario");
-    grid.innerHTML = "";
-    
-    const primerDia = new Date(navAnio, navMes, 1).getDay();
-    const diasEnMes = new Date(navAnio, navMes + 1, 0).getDate();
-    
-    const mesesStr = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
-    mesTitulo.innerText = `${mesesStr[navMes]} ${navAnio}`;
-    
-    let agenda = await localforage.getItem("agendaQC") || [];
-    const hoy = new Date();
-    const esMesActual = hoy.getMonth() === navMes && hoy.getFullYear() === navAnio;
-    const diaHoy = hoy.getDate();
-
-    // Espacios vacíos antes del primer día del mes
-    for(let i = 0; i < primerDia; i++) {
-        grid.innerHTML += `<div class="calendar-day empty"></div>`;
-    }
-    
-    // Días del mes
-    for(let i = 1; i <= diasEnMes; i++) {
-        const fechaActualStr = `${navAnio}-${String(navMes+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
-        const tieneEvento = agenda.some(ev => ev.fecha === fechaActualStr);
-        
-        const dot = tieneEvento ? `<div class="event-dot"></div>` : '';
-        const claseHoy = (esMesActual && i === diaHoy) ? 'today' : '';
-        const claseSeleccionado = (diaSeleccionado === fechaActualStr) ? 'selected' : '';
-        
-        grid.innerHTML += `<div class="calendar-day ${claseHoy} ${claseSeleccionado}" onclick="abrirDetalleDia('${fechaActualStr}', ${i})">${i}${dot}</div>`;
+    const grid = document.getElementById("diasCalendario"); grid.innerHTML = "";
+    document.getElementById("mesAnioCalendario").innerText = `${navMes+1} / ${navAnio}`;
+    let agenda = await localforage.getItem("agendaHogar") || [];
+    for(let i=1; i<=31; i++) {
+        const f = `${navAnio}-${navMes+1}-${i}`;
+        const has = agenda.some(e => e.fecha === f);
+        grid.innerHTML += `<div class="calendar-day ${has?'selected':''}" onclick="abrirDetalleDia('${f}',${i})">${i}</div>`;
     }
 }
-
-async function abrirDetalleDia(fechaStr, diaNum) {
-    diaSeleccionado = fechaStr;
-    await renderizarCalendario(); 
-    
-    const panel = document.getElementById("panelDetalleDia");
-    const titulo = document.getElementById("tituloDiaDetalle");
-    const lista = document.getElementById("listaEventosDia");
-    
-    const mesesStr = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
-    titulo.innerHTML = `<i class="fas fa-clipboard-check"></i> Tareas para el ${diaNum} de ${mesesStr[navMes]}`;
-    
-    let agenda = await localforage.getItem("agendaQC") || [];
-    const eventosDelDia = agenda.filter(ev => ev.fecha === fechaStr);
-    
-    if(eventosDelDia.length === 0) {
-        lista.innerHTML = "<span style='font-size:13px; color:var(--muted);'>No hay pendientes este día.</span>";
-    } else {
-        lista.innerHTML = eventosDelDia.map(ev => `
-            <div style="display:flex; justify-content:space-between; align-items:center; padding: 8px 0; border-bottom: 1px dashed var(--border);">
-                <span style="font-size: 14px; color: var(--text);">${ev.nombre}</span>
-                <button onclick="eliminarEventoAgenda(${ev.id})" class="btn-del-task" style="width: 28px; height: 28px; box-shadow:none;"><i class="fas fa-times"></i></button>
-            </div>
-        `).join("");
-    }
-    
-    document.getElementById("inputNuevoEvento").value = "";
-    panel.style.display = "block";
+async function abrirDetalleDia(f, n) {
+    diaSeleccionado = f; document.getElementById("tituloDiaDetalle").innerText = "Día " + n;
+    let agenda = await localforage.getItem("agendaHogar") || [];
+    document.getElementById("listaEventosDia").innerHTML = agenda.filter(e => e.fecha === f).map(e => `<div>${e.nombre}</div>`).join("");
+    document.getElementById("panelDetalleDia").style.display = "block";
 }
-
 async function guardarEventoRapido() {
-    const nombre = document.getElementById("inputNuevoEvento").value.trim();
-    if(!nombre || !diaSeleccionado) return;
-
-    let agenda = await localforage.getItem("agendaQC") || [];
-    agenda.push({ id: Date.now(), fecha: diaSeleccionado, nombre: nombre });
-    agenda.sort((a, b) => new Date(a.fecha) - new Date(b.fecha)); 
-    
-    await localforage.setItem("agendaQC", agenda);
-    
-    // Refrescar la vista actual del día
-    const diaNum = parseInt(diaSeleccionado.split("-")[2]);
-    abrirDetalleDia(diaSeleccionado, diaNum);
+    const n = document.getElementById("inputNuevoEvento").value; if(!n) return;
+    let agenda = await localforage.getItem("agendaHogar") || [];
+    agenda.push({ fecha: diaSeleccionado, nombre: n }); await localforage.setItem("agendaHogar", agenda);
+    renderizarCalendario(); abrirDetalleDia(diaSeleccionado, diaSeleccionado.split('-')[2]);
 }
 
-async function eliminarEventoAgenda(id) {
-    if(confirm("¿Completaste o deseas eliminar esta actividad?")) {
-        let agenda = await localforage.getItem("agendaQC") || [];
-        agenda = agenda.filter(ev => ev.id !== id);
-        await localforage.setItem("agendaQC", agenda);
-        
-        const diaNum = parseInt(diaSeleccionado.split("-")[2]);
-        abrirDetalleDia(diaSeleccionado, diaNum);
-    }
+async function validarChecklist() {
+    const clave = `historialHogar_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`;
+    const historial = await localforage.getItem(clave) || [];
+    historial.push({ fecha: new Date().toLocaleDateString(), jornada: sesionActual.tipo, observaciones: sesionActual.observaciones });
+    await localforage.setItem(clave, historial); await localforage.removeItem("sesion_activa_hogar");
+    alert("Día guardado."); location.reload();
 }
 
-async function cargarProximosEventos() {
-    const agenda = await localforage.getItem("agendaQC") || [];
-    const contenedorPadre = document.getElementById("proximosEventos");
-    const contenedorLista = document.getElementById("listaProximosEventos");
-    
-    const tzOffset = (new Date()).getTimezoneOffset() * 60000;
-    const hoy = (new Date(Date.now() - tzOffset)).toISOString().split('T')[0];
-    
-    const eventosFuturos = agenda.filter(ev => ev.fecha >= hoy).slice(0, 3);
-    
-    if(eventosFuturos.length > 0) {
-        contenedorPadre.style.display = "block";
-        contenedorLista.innerHTML = eventosFuturos.map(ev => `
-            <div style="padding: 8px 0; border-bottom: 1px dashed var(--border);">
-                <strong style="color: var(--neon-red);"><i class="fas fa-exclamation-circle"></i> ${ev.fecha}:</strong> ${ev.nombre}
-            </div>
-        `).join("");
-    } else {
-        contenedorPadre.style.display = "none";
-    }
-}
+function nuevaJornada() { location.reload(); }
+async function eliminarHistorial() { if(confirm("¿Borrar mes?")) { await localforage.removeItem(`historialHogar_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`); location.reload(); } }
+function volverAlInicioDesdeAgenda() { document.getElementById("pantallaAgenda").style.display = "none"; document.getElementById("pantallaInicio").style.display = "block"; }
+function volverAlInicio() { show("pantallaInicio"); }
 </script>
 </body>
 </html>
