@@ -14,7 +14,7 @@
     /* Paleta Primaveral y Energética */
     --viva-green: #10b981;       /* Verde menta/esmeralda fresco */
     --viva-green-hover: #059669; /* Verde hoja un poco más profundo */
-    --bg: #f0fdf4;               /* Verde/Blanco sutil, como rocío de mañana */
+    --bg: #f0fdf4;                /* Verde/Blanco sutil, como rocío de mañana */
     --panel: #ffffff;            
     --text: #334155;             /* Gris suave, menos agresivo que el negro puro */
     --muted: #94a3b8;            
@@ -387,6 +387,7 @@
       box-shadow: 0 6px 12px rgba(244, 63, 94, 0.2);
       letter-spacing: 0.5px;
       text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+      cursor: pointer;
   }
 
   /* --- ESTILOS DEL CALENDARIO --- */
@@ -439,8 +440,9 @@
   <section id="pantallaInicio">
     <h1><i class="fas fa-sun"></i> Seguimiento de Actividades Diarias</h1>
     
-    <div class="frase-motivacional">
-        "HOY SOY MEJOR QUE AYER, ESTAMOS A UN PASO DE SER LOS MEJORES."
+    <div class="frase-motivacional" onclick="modificarFrase()">
+        <span id="txtFrase">"HOY SOY MEJOR QUE AYER, ESTAMOS A UN PASO DE SER LOS MEJORES."</span>
+        <i class="fas fa-pencil-alt" style="font-size: 10px; opacity: 0.6; margin-left: 5px;"></i>
     </div>
 
     <div id="proximosEventos" style="background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 15px; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
@@ -573,7 +575,7 @@
     </div>
     
     <div class="action-bottom-bar" style="margin-top: 30px;">
-        <button onclick="validarChecklist()" class="btn-success" style="padding: 16px; font-size: 15px;"><i class="fas fa-flag-checkered"></i> Finalizar Día</button>
+        <button onclick="validarChecklist()" class="btn-success" style="padding: 166px; font-size: 15px;"><i class="fas fa-flag-checkered"></i> Finalizar Día</button>
         <button onclick="pausarYVolverInicio()" class="btn-outline" style="color: var(--danger); border-color: var(--danger);"><i class="fas fa-pause-circle"></i> Pausar y Salir</button>
     </div>
   </section>
@@ -710,6 +712,12 @@ window.onload = async function() {
         misChecklists = configuracionGuardada;
     }
     
+    // Cargar Frase Motivacional personalizada
+    const fraseGuardada = await localforage.getItem("fraseMotivacionalQC");
+    if (fraseGuardada) {
+        document.getElementById("txtFrase").innerText = fraseGuardada;
+    }
+
     const sesionGuardada = await localforage.getItem("sesion_activa_qc");
     if (sesionGuardada) {
         if(confirm("⚠️ Tienes un registro de día en curso. ¿Deseas retomarlo?")) {
@@ -742,6 +750,16 @@ window.onload = async function() {
     verificarMemoria(); 
     await cargarProximosEventos();
 };
+
+// FUNCIÓN PARA MODIFICAR FRASE
+async function modificarFrase() {
+    const fraseActual = document.getElementById("txtFrase").innerText;
+    const nuevaFrase = prompt("Escribe tu nueva frase motivacional:", fraseActual);
+    if (nuevaFrase !== null && nuevaFrase.trim() !== "") {
+        document.getElementById("txtFrase").innerText = nuevaFrase;
+        await localforage.setItem("fraseMotivacionalQC", nuevaFrase);
+    }
+}
 
 // --- SENSOR DE MEMORIA ---
 async function verificarMemoria() {
