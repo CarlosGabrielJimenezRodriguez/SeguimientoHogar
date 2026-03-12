@@ -672,8 +672,8 @@ let modoEdicionActivo = false;
 window.onload = async function() {
     
     localforage.config({
-        name: 'App_Hogar_Gabriel',
-        storeName: 'datos_hogar'
+        name: 'DB_Hogar_Gabriel_Personal', // CAMBIO CLAVE: Nombre único para evitar mezcla
+        storeName: 'datos_hogar_v1'
     });
 
     let configuracionGuardada = await localforage.getItem("configChecklistsHogar");
@@ -946,7 +946,7 @@ async function validarChecklist() {
 function nuevaJornada() { location.reload(); }
 async function eliminarHistorial() { if(confirm("¿Borrar mes?")) { await localforage.removeItem(`historialHogar_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`); location.reload(); } }
 function volverAlInicioDesdeAgenda() { document.getElementById("pantallaAgenda").style.display = "none"; document.getElementById("pantallaInicio").style.display = "block"; }
-function volverAlInicio() { show("pantallaInicio"); }
+function volverAlInicio() { document.getElementById("pantallaMenu").style.display = "none"; document.getElementById("pantallaInicio").style.display = "block"; }
 </script>
 </body>
 </html>
