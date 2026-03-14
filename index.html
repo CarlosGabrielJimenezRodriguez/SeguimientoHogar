@@ -12,22 +12,22 @@
 <style>
   :root {
     /* Paleta Primaveral y Energética */
-    --viva-green: #10b981;       /* Verde menta/esmeralda fresco */
+    --viva-green: #10b981;        /* Verde menta/esmeralda fresco */
     --viva-green-hover: #059669; /* Verde hoja un poco más profundo */
     --bg: #f0fdf4;                /* Verde/Blanco sutil, como rocío de mañana */
-    --panel: #ffffff;            
-    --text: #334155;             /* Gris suave, menos agresivo que el negro puro */
-    --muted: #94a3b8;            
-    --border: #e2e8f0;           
+    --panel: #ffffff;             
+    --text: #334155;              /* Gris suave, menos agresivo que el negro puro */
+    --muted: #94a3b8;             
+    --border: #e2e8f0;            
     
     /* Tonos Vibrantes para interacciones */
-    --neon-red: #f43f5e;         /* Rosa coral brillante en lugar de rojo oscuro */
-    --neon-green: #22c55e;       /* Verde vivo para los checks */
+    --neon-red: #f43f5e;          /* Rosa coral brillante en lugar de rojo oscuro */
+    --neon-green: #22c55e;        /* Verde vivo para los checks */
 
     --accent: var(--viva-green);
     --danger: var(--neon-red); 
     --success: var(--neon-green); 
-    --warning: #fbbf24;          /* Amarillo cálido como el sol */
+    --warning: #fbbf24;           /* Amarillo cálido como el sol */
   }
 
   /* Reset y base corporativa */
@@ -402,6 +402,21 @@
   .calendar-day.today { border-color: var(--viva-green); color: var(--viva-green); font-weight: bold; background: #f0fdf4; }
   .calendar-day.selected { background: linear-gradient(135deg, var(--viva-green), #0ea5e9); color: white; border-color: transparent; box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);}
   .event-dot { position: absolute; bottom: 3px; left: 50%; transform: translateX(-50%); width: 6px; height: 6px; background-color: var(--neon-red); border-radius: 50%; box-shadow: 0 0 4px rgba(244, 63, 94, 0.5); }
+
+  /* NUEVO: Estilo para días en proceso */
+  .card-pendiente {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--warning);
+      padding: 12px 15px;
+      border-radius: 10px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  }
 </style>
 </head>
 <body>
@@ -445,6 +460,11 @@
         <i class="fas fa-pencil-alt" style="font-size: 10px; opacity: 0.6; margin-left: 5px;"></i>
     </div>
 
+    <div id="seccionPendientes" style="margin-bottom: 20px; display:none;">
+        <h3 style="margin-top:0; border-bottom-color: var(--warning); color: var(--warning);"><i class="fas fa-hourglass-half"></i> Días en Proceso</h3>
+        <div id="listaPendientes"></div>
+    </div>
+
     <div id="proximosEventos" style="background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 16px; margin-bottom: 15px; display: none; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
         <h4 style="margin: 0 0 10px 0; color: var(--viva-green); font-size: 14px;"><i class="fas fa-calendar-alt"></i> Próximos Eventos</h4>
         <div id="listaProximosEventos" style="font-size: 13px;"></div>
@@ -465,7 +485,7 @@
       </div>
       
       <div class="action-bottom-bar" style="border: none; padding-top: 0;">
-        <button type="submit" id="btnIniciar" style="padding: 14px; font-size: 15px;"><i class="fas fa-play"></i> Iniciar Día</button>
+        <button type="submit" id="btnIniciar" style="padding: 14px; font-size: 15px;"><i class="fas fa-play"></i> Iniciar Nuevo Día</button>
         <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px;">
             <button type="button" onclick="irAHistorial()" class="btn-outline" style="font-size: 12px; padding: 8px;"><i class="fas fa-history"></i> Historial</button>
             <button type="button" onclick="irAAgenda()" class="btn-outline" style="font-size: 12px; padding: 8px;"><i class="fas fa-calendar"></i> Agenda</button>
@@ -533,22 +553,6 @@
     </div>
   </section>
 
-  <section id="pantallaTiempoExtra" style="display:none;">
-    <h1 style="text-align:left;"><i class="fas fa-clock"></i> Control de Tiempo Extra</h1>
-    <div style="background: var(--panel); padding: 24px; border: 1px solid var(--border); border-radius: 12px; text-align: center; margin-top: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.02);">
-        <h3 style="border: none; margin: 0; padding: 0;">¿Deseas agregar actividades extra?</h3>
-        
-        <div style="display: flex; gap: 10px; margin-top:24px;">
-            <button onclick="seleccionarTiempoExtra(false)" class="btn-outline" style="color: var(--muted); border-color: var(--border); padding: 14px;">NO</button>
-            <button onclick="seleccionarTiempoExtra(true)" style="padding: 14px;">SÍ</button>
-        </div>
-    </div>
-    
-    <div class="action-bottom-bar">
-        <button onclick="volverAJornada()" class="btn-outline" style="color: var(--muted); border-color: var(--border);"><i class="fas fa-arrow-left"></i> Regresar</button>
-    </div>
-  </section>
-
   <section id="pantallaChecklist" style="display:none;">
     <h1 style="display:flex; justify-content:space-between; align-items:center;">
         <span><i class="fas fa-clipboard-list"></i> Checklist Activo</span>
@@ -576,7 +580,7 @@
     
     <div class="action-bottom-bar" style="margin-top: 30px;">
         <button onclick="validarChecklist()" class="btn-success" style="padding: 16px; font-size: 15px;"><i class="fas fa-flag-checkered"></i> Finalizar Día</button>
-        <button onclick="pausarYVolverInicio()" class="btn-outline" style="color: var(--danger); border-color: var(--danger);"><i class="fas fa-pause-circle"></i> Pausar y Salir</button>
+        <button onclick="pausarYVolverInicio()" class="btn-outline" style="color: var(--warning); border-color: var(--warning);"><i class="fas fa-save"></i> Guardar Progreso y Salir</button>
     </div>
   </section>
 
@@ -641,7 +645,7 @@
 </main>
 
 <script>
-// --- DATOS ACTUALIZADOS: CADA DÍA TIENE SUS BLOQUES ---
+// --- DATOS INICIALES ---
 const listasDescanso = [
     "Dormir 8 hrs", "Lavar trastes", "Lavarse dientes después de comer",
     "Lavar dientes al despertar", "Bañarse antes dormir", "Lavar dientes al despertar ", 
@@ -656,29 +660,21 @@ const baseExtras = ["estudiar algo nuevo", "repasar algo"];
 
 const checklistsBase = {
   Extra: ["Actividad Extra"],
-  
-  // DÍA 1
   PrimerDescanso: [...listasDescanso],
   PrimerDescanso_Manana: [...baseManana],
   PrimerDescanso_Tarde: [...baseTarde],
   PrimerDescanso_Noche: [...baseNoche],
   PrimerDescanso_Extras: [...baseExtras],
-
-  // DÍA 2
   SegundoDescanso: [...listasDescanso],
   SegundoDescanso_Manana: [...baseManana],
   SegundoDescanso_Tarde: [...baseTarde],
   SegundoDescanso_Noche: [...baseNoche],
   SegundoDescanso_Extras: [...baseExtras],
-
-  // DÍA 3
   TercerDescanso: [...listasDescanso],
   TercerDescanso_Manana: [...baseManana],
   TercerDescanso_Tarde: [...baseTarde],
   TercerDescanso_Noche: [...baseNoche],
   TercerDescanso_Extras: [...baseExtras],
-
-  // DÍA 4
   CuartoDescanso: [...listasDescanso],
   CuartoDescanso_Manana: [...baseManana],
   CuartoDescanso_Tarde: [...baseTarde],
@@ -689,21 +685,13 @@ const checklistsBase = {
 let misChecklists = checklistsBase;
 let fotosAeronaves = { 1: [], 2: [], 3: [], 4: [] };
 let fotosObservaciones = [];
-let indiceEditando = -1;
-let fotosEditando = [];
 let sesionActual = null;
 let modoEdicionActivo = false; 
 
 // --- INICIO Y RESTAURACIÓN ---
 window.onload = async function() {
-    
-    // --- INTEGRACIÓN: CONFIGURACIÓN DE SEGURIDAD HOGAR ---
-    localforage.config({
-        name: 'App_Hogar_Gabriel',
-        storeName: 'datos_hogar'
-    });
+    localforage.config({ name: 'App_Hogar_Gabriel', storeName: 'datos_hogar' });
 
-    // Cargar listas personalizadas o resetear si es una versión anterior a la separación de días
     let configuracionGuardada = await localforage.getItem("configChecklistsQC");
     if (!configuracionGuardada || !configuracionGuardada.PrimerDescanso_Manana) {
         await localforage.setItem("configChecklistsQC", checklistsBase);
@@ -712,125 +700,70 @@ window.onload = async function() {
         misChecklists = configuracionGuardada;
     }
     
-    // Cargar Frase Motivacional personalizada
     const fraseGuardada = await localforage.getItem("fraseMotivacionalQC");
-    if (fraseGuardada) {
-        document.getElementById("txtFrase").innerText = fraseGuardada;
-    }
+    if (fraseGuardada) document.getElementById("txtFrase").innerText = fraseGuardada;
 
-    const sesionGuardada = await localforage.getItem("sesion_activa_qc");
-    if (sesionGuardada) {
-        if(confirm("⚠️ Tienes un registro de día en curso. ¿Deseas retomarlo?")) {
-            sesionActual = sesionGuardada;
-            
-            // Reparamos si no traía los nuevos bloques
-            if (!sesionActual.liberacionItems || !sesionActual.liberacionItems[2]) {
-                const tipoActivo = sesionActual.tipo || "PrimerDescanso";
-                sesionActual.liberacionItems = {
-                    1: [...(misChecklists[tipoActivo + "_Manana"] || baseManana)], 
-                    2: [...(misChecklists[tipoActivo + "_Tarde"] || baseTarde)],
-                    3: [...(misChecklists[tipoActivo + "_Noche"] || baseNoche)], 
-                    4: [...(misChecklists[tipoActivo + "_Extras"] || baseExtras)]
-                };
-                sesionActual.matriculas = { 1: "MAÑANA (8am - 12pm)", 2: "TARDE (12pm - 5pm)", 3: "NOCHE (5pm - 10pm)", 4: "EXTRAS" };
-                sesionActual.liberacionChecks = { 1: [], 2: [], 3: [], 4: [] };
-                sesionActual.matriculasHoras = { 1: null, 2: null, 3: null, 4: null };
-            }
-
-            fotosAeronaves = sesionActual.fotosAeronaves || { 1: [], 2: [], 3: [], 4: [] };
-            fotosObservaciones = sesionActual.fotosObservaciones || [];
-            document.getElementById("pantallaInicio").style.display = "none";
-            document.getElementById("pantallaChecklist").style.display = "block";
-            renderizarChecklistDesdeSesion();
-        } else {
-            await localforage.removeItem("sesion_activa_qc");
-        }
-    }
-    
+    await renderizarPendientes();
     verificarMemoria(); 
     await cargarProximosEventos();
 };
 
-// FUNCIÓN PARA MODIFICAR FRASE
-async function modificarFrase() {
-    const fraseActual = document.getElementById("txtFrase").innerText;
-    const nuevaFrase = prompt("Escribe tu nueva frase motivacional:", fraseActual);
-    if (nuevaFrase !== null && nuevaFrase.trim() !== "") {
-        document.getElementById("txtFrase").innerText = nuevaFrase;
-        await localforage.setItem("fraseMotivacionalQC", nuevaFrase);
+// --- GESTIÓN DE MÚLTIPLES SESIONES ---
+async function renderizarPendientes() {
+    const contenedorPendientes = document.getElementById("seccionPendientes");
+    const listaPendientes = document.getElementById("listaPendientes");
+    const pendientes = await localforage.getItem("sesiones_pendientes_qc") || {};
+    
+    const ids = Object.keys(pendientes);
+    if (ids.length > 0) {
+        contenedorPendientes.style.display = "block";
+        listaPendientes.innerHTML = ids.map(id => {
+            const s = pendientes[id];
+            return `
+                <div class="card-pendiente" onclick="retomarSesion('${id}')">
+                    <div>
+                        <strong style="display:block;">${s.tipo}</strong>
+                        <small style="color:var(--muted);"><i class="fas fa-calendar-day"></i> ${s.fecha_inicio} | <i class="fas fa-clock"></i> ${s.horaEntrada}</small>
+                    </div>
+                    <div style="display: flex; gap: 15px; align-items: center;">
+                        <i class="fas fa-trash-alt" style="color:var(--danger); font-size: 16px;" onclick="borrarSesionPendiente('${id}', event)"></i>
+                        <i class="fas fa-chevron-right" style="color:var(--warning);"></i>
+                    </div>
+                </div>
+            `;
+        }).join("");
+    } else {
+        contenedorPendientes.style.display = "none";
     }
 }
 
-// --- SENSOR DE MEMORIA ---
-async function verificarMemoria() {
-    try {
-        let mostrarAlerta = false;
-        
-        const mesClave = `historialQC_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`;
-        const historial = await localforage.getItem(mesClave);
-        if (historial) {
-            let totalFotos = 0;
-            historial.forEach(h => {
-                if (h.fotosObservaciones) totalFotos += h.fotosObservaciones.length;
-                if (h.matriculas) h.matriculas.forEach(m => totalFotos += (m.fotos ? m.fotos.length : 0));
-            });
-            if (totalFotos >= 45) mostrarAlerta = true; 
-        }
-
-        if (navigator.storage && navigator.storage.estimate) {
-            const estimate = await navigator.storage.estimate();
-            const porcentaje = (estimate.usage / estimate.quota) * 100;
-            if (porcentaje > 85) mostrarAlerta = true;
-        }
-
-        const banner = document.getElementById("alertaMemoria");
-        banner.style.display = mostrarAlerta ? "block" : "none";
-        
-    } catch(e) { console.error("Error al verificar memoria:", e); }
+async function borrarSesionPendiente(id, event) {
+    event.stopPropagation(); // Evita que se abra la sesión al hacer clic en el botón de borrar
+    if(confirm("¿Estás seguro de que deseas cancelar y borrar este día en proceso? Se perderá el progreso no finalizado.")) {
+        const pendientes = await localforage.getItem("sesiones_pendientes_qc") || {};
+        delete pendientes[id];
+        await localforage.setItem("sesiones_pendientes_qc", pendientes);
+        await renderizarPendientes();
+    }
 }
 
-// --- CONFIG MAESTRA ---
-function irAConfig() {
-    document.getElementById("pantallaInicio").style.display = "none";
-    document.getElementById("pantallaConfig").style.display = "block";
-    renderEditor();
+async function retomarSesion(id) {
+    const pendientes = await localforage.getItem("sesiones_pendientes_qc") || {};
+    sesionActual = pendientes[id];
+    if (sesionActual) {
+        fotosAeronaves = sesionActual.fotosAeronaves || { 1: [], 2: [], 3: [], 4: [] };
+        fotosObservaciones = sesionActual.fotosObservaciones || [];
+        document.getElementById("pantallaInicio").style.display = "none";
+        document.getElementById("pantallaChecklist").style.display = "block";
+        renderizarChecklistDesdeSesion();
+    }
 }
 
-function renderEditor() {
-    const tipo = document.getElementById("selectTipoConfig").value;
-    const contenedor = document.getElementById("editorTareas");
-    contenedor.innerHTML = "";
-    
-    if(!misChecklists[tipo]) misChecklists[tipo] = []; // Seguro
-    
-    misChecklists[tipo].forEach((tarea, index) => {
-        contenedor.innerHTML += `
-            <div class="editor-item" style="display:flex; gap:8px; margin-bottom:10px;">
-                <input type="text" value="${tarea}" onchange="actualizarTarea('${tipo}', ${index}, this.value)" style="margin:0; padding:12px;">
-                <button onclick="eliminarTarea('${tipo}', ${index})" class="btn-del-task" style="width:45px; height:auto; margin:0;"><i class="fas fa-trash"></i></button>
-            </div>
-        `;
-    });
-}
-function actualizarTarea(tipo, index, valor) { misChecklists[tipo][index] = valor; }
-function eliminarTarea(tipo, index) { misChecklists[tipo].splice(index, 1); renderEditor(); }
-function agregarTarea() { const tipo = document.getElementById("selectTipoConfig").value; misChecklists[tipo].push("Nuevo ítem..."); renderEditor(); }
-async function guardarConfig() {
-    await localforage.setItem("configChecklistsQC", misChecklists);
-    alert("✅ Listas maestras actualizadas.");
-}
-function volverAlInicioDesdeConfig() {
-    document.getElementById("pantallaConfig").style.display = "none";
-    document.getElementById("pantallaInicio").style.display = "block";
-}
-
-// --- FLUJO ---
+// --- FLUJO INICIO ---
 document.getElementById("formInicio").addEventListener("submit", async function(e) {
   e.preventDefault();
   const datos = {
-    // Valores invisibles para mantener la estructura estable
     nombre: "Gabriel",
-    empleado: "",
     fecha: document.getElementById("fecha").value,
     horaEntrada: document.getElementById("horaEntrada").value
   };
@@ -842,24 +775,18 @@ document.getElementById("formInicio").addEventListener("submit", async function(
 async function seleccionarJornada(tipo){
   await localforage.setItem("tipoJornadaQC", tipo);
   document.getElementById("pantallaMenu").style.display = "none";
-  await localforage.setItem("esTiempoExtraQC", "NO");
   inicializarSesion(tipo, "NO");
 }
 
-async function seleccionarTiempoExtra(esExtra){
-  const strExtra = esExtra ? "SI" : "NO";
-  await localforage.setItem("esTiempoExtraQC", strExtra);
-  const tipo = await localforage.getItem("tipoJornadaQC");
-  document.getElementById("pantallaTiempoExtra").style.display = "none";
-  inicializarSesion(tipo, strExtra);
-}
-
-function inicializarSesion(tipo, esExtraStr) {
+async function inicializarSesion(tipo, esExtraStr) {
+    const colaborador = await localforage.getItem("colaboradorQC");
     let tareasIniciales = [...misChecklists[tipo]];
-    if(esExtraStr === "SI" && tipo !== "Curso") tareasIniciales = tareasIniciales.concat(misChecklists.Extra);
 
     sesionActual = {
+        id: "ID_" + Date.now(),
         tipo: tipo,
+        fecha_inicio: colaborador.fecha,
+        horaEntrada: colaborador.horaEntrada,
         esExtra: esExtraStr,
         tareas: tareasIniciales.map(t => ({ texto: t, hecho: false, hora: null })),
         liberacionChecks: { 1: [], 2: [], 3: [], 4: [] },
@@ -882,21 +809,133 @@ function inicializarSesion(tipo, esExtraStr) {
     guardarProgreso();
 }
 
-function pausarYVolverInicio() {
-    document.getElementById("pantallaChecklist").style.display = "none";
-    document.getElementById("pantallaMenu").style.display = "block";
+// --- GUARDADO Y PAUSA ---
+async function guardarProgreso() {
+    if(!sesionActual) return;
+    sesionActual.observaciones = document.getElementById("observacionesTurno").value;
+    sesionActual.fotosAeronaves = fotosAeronaves;
+    sesionActual.fotosObservaciones = fotosObservaciones;
+    
+    const pendientes = await localforage.getItem("sesiones_pendientes_qc") || {};
+    pendientes[sesionActual.id] = sesionActual;
+    await localforage.setItem("sesiones_pendientes_qc", pendientes);
 }
 
-function volverInicioDesdeHistorial() {
-    document.querySelectorAll("section").forEach(s => s.style.display = "none");
-    if (sesionActual) {
-        document.getElementById("pantallaChecklist").style.display = "block";
-    } else {
-        document.getElementById("pantallaInicio").style.display = "block";
+async function pausarYVolverInicio() {
+    await guardarProgreso();
+    sesionActual = null;
+    location.reload(); 
+}
+
+// --- FINALIZACIÓN ---
+async function validarChecklist() {
+  const tipo = sesionActual.tipo;
+  let matriculasData = [];
+  
+  for (let i = 1; i <= 4; i++) {
+    const checksFaltantes = document.querySelectorAll(`.sub-check-${i}:not(:checked)`);
+    if (checksFaltantes.length > 0) { 
+        alert(`⚠️ Tienes actividades pendientes en el bloque ${sesionActual.matriculas[i]}.`); 
+        return; 
+    }
+    const mat = sesionActual.matriculas[i] || "";
+    matriculasData.push({ id: mat.toUpperCase(), hora: sesionActual.matriculasHoras[i] || "--:--", fotos: [...fotosAeronaves[i]] });
+  }
+  
+  const tareasIncompletas = sesionActual.tareas.some(t => !t.hecho);
+  if (tareasIncompletas) { alert("⚠️ Tareas del día incompletas."); return; }
+  
+  const colaborador = await localforage.getItem("colaboradorQC");
+  const registro = {
+    nombre: colaborador.nombre, fecha: sesionActual.fecha_inicio,
+    jornada: tipo, matriculas: matriculasData,
+    horaFin: new Date().toLocaleTimeString(), observaciones: document.getElementById("observacionesTurno").value.trim(),
+    fotosObservaciones: [...fotosObservaciones]
+  };
+  
+  const mesClave = `historialQC_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`;
+  const historial = await localforage.getItem(mesClave) || [];
+  historial.push(registro);
+  await localforage.setItem(mesClave, historial);
+
+  const pendientes = await localforage.getItem("sesiones_pendientes_qc") || {};
+  delete pendientes[sesionActual.id];
+  await localforage.setItem("sesiones_pendientes_qc", pendientes);
+
+  sesionActual = null;
+  alert("✅ Vamos con todo un día más siendo mejor que ayer");
+  location.reload();
+}
+
+// --- FUNCIONES ORIGINALES (SIN CAMBIOS) ---
+async function modificarFrase() {
+    const fraseActual = document.getElementById("txtFrase").innerText;
+    const nuevaFrase = prompt("Escribe tu nueva frase motivacional:", fraseActual);
+    if (nuevaFrase !== null && nuevaFrase.trim() !== "") {
+        document.getElementById("txtFrase").innerText = nuevaFrase;
+        await localforage.setItem("fraseMotivacionalQC", nuevaFrase);
     }
 }
 
-// --- RENDERIZADO Y MODOS DEL CHECKLIST ---
+async function verificarMemoria() {
+    try {
+        let mostrarAlerta = false;
+        const mesClave = `historialQC_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`;
+        const historial = await localforage.getItem(mesClave);
+        if (historial) {
+            let totalFotos = 0;
+            historial.forEach(h => {
+                if (h.fotosObservaciones) totalFotos += h.fotosObservaciones.length;
+                if (h.matriculas) h.matriculas.forEach(m => totalFotos += (m.fotos ? m.fotos.length : 0));
+            });
+            if (totalFotos >= 45) mostrarAlerta = true; 
+        }
+
+        if (navigator.storage && navigator.storage.estimate) {
+            const estimate = await navigator.storage.estimate();
+            const porcentaje = (estimate.usage / estimate.quota) * 100;
+            if (porcentaje > 85) mostrarAlerta = true;
+        }
+
+        const banner = document.getElementById("alertaMemoria");
+        banner.style.display = mostrarAlerta ? "block" : "none";
+    } catch(e) { console.error("Error al verificar memoria:", e); }
+}
+
+function irAConfig() {
+    document.getElementById("pantallaInicio").style.display = "none";
+    document.getElementById("pantallaConfig").style.display = "block";
+    renderEditor();
+}
+
+function renderEditor() {
+    const tipo = document.getElementById("selectTipoConfig").value;
+    const contenedor = document.getElementById("editorTareas");
+    contenedor.innerHTML = "";
+    
+    if(!misChecklists[tipo]) misChecklists[tipo] = []; 
+    
+    misChecklists[tipo].forEach((tarea, index) => {
+        contenedor.innerHTML += `
+            <div class="editor-item" style="display:flex; gap:8px; margin-bottom:10px;">
+                <input type="text" value="${tarea}" onchange="actualizarTarea('${tipo}', ${index}, this.value)" style="margin:0; padding:12px;">
+                <button onclick="eliminarTarea('${tipo}', ${index})" class="btn-del-task" style="width:45px; height:auto; margin:0;"><i class="fas fa-trash"></i></button>
+            </div>
+        `;
+    });
+}
+function actualizarTarea(tipo, index, valor) { misChecklists[tipo][index] = valor; }
+function eliminarTarea(tipo, index) { misChecklists[tipo].splice(index, 1); renderEditor(); }
+function agregarTarea() { const tipo = document.getElementById("selectTipoConfig").value; misChecklists[tipo].push("Nuevo ítem..."); renderEditor(); }
+async function guardarConfig() {
+    await localforage.setItem("configChecklistsQC", misChecklists);
+    alert("✅ Listas maestras actualizadas.");
+}
+function volverAlInicioDesdeConfig() {
+    document.getElementById("pantallaConfig").style.display = "none";
+    document.getElementById("pantallaInicio").style.display = "block";
+}
+
 function toggleModoEdicion() {
     modoEdicionActivo = !modoEdicionActivo;
     const btn = document.getElementById("btnToggleEdit");
@@ -946,76 +985,76 @@ function renderizarChecklistDesdeSesion() {
         contenedor.innerHTML += `<div>${contenidoItem}</div>`;
     });
 
-    if (sesionActual.tipo !== "Curso") {
-        contenedor.innerHTML += `<h3 style="margin-top: 35px;"><i class="fas fa-clock"></i> Rutina por Horarios</h3>`;
+    contenedor.innerHTML += `<h3 style="margin-top: 35px;"><i class="fas fa-clock"></i> Rutina por Horarios</h3>`;
+    
+    for (let i = 1; i <= 4; i++) {
+        let miniItemsHTML = "";
+        const itemsLibDinamicos = sesionActual.liberacionItems[i];
         
-        for (let i = 1; i <= 4; i++) {
-            let miniItemsHTML = "";
-            const itemsLibDinamicos = sesionActual.liberacionItems[i];
+        itemsLibDinamicos.forEach((subItem, subIndex) => {
+            const isChecked = sesionActual.liberacionChecks[i] && sesionActual.liberacionChecks[i].includes(subIndex) ? "checked" : "";
             
-            itemsLibDinamicos.forEach((subItem, subIndex) => {
-                const isChecked = sesionActual.liberacionChecks[i] && sesionActual.liberacionChecks[i].includes(subIndex) ? "checked" : "";
-                
-                let btnBotonesEdicion = "";
-                if (modoEdicionActivo) {
-                    btnBotonesEdicion = `
-                        <div style="display:flex; gap:4px; margin-left:auto; flex-shrink:0;">
-                            <button class="btn-move" style="width:28px; height:28px;" onclick="moverPendienteLiberacion(${i}, ${subIndex}, -1)"><i class="fas fa-angle-up"></i></button>
-                            <button class="btn-move" style="width:28px; height:28px;" onclick="moverPendienteLiberacion(${i}, ${subIndex}, 1)"><i class="fas fa-angle-down"></i></button>
-                            <button class="btn-outline" style="width:28px; height:28px; padding:0; margin:0;" onclick="editarPendienteLiberacion(${i}, ${subIndex})"><i class="fas fa-pencil-alt"></i></button>
-                            <button class="btn-del-task" style="width:28px; height:28px;" onclick="eliminarPendienteLiberacion(${i}, ${subIndex})"><i class="fas fa-times"></i></button>
-                        </div>
-                    `;
-                }
-
-                miniItemsHTML += `
-                    <div class="mini-option">
-                        <label class="modern-check-container mini" style="flex-grow:1;">
-                            <input type="checkbox" class="sub-check-${i}" data-idx="${subIndex}" ${isChecked} onchange="verificarEstadoLiberacion(${i})">
-                            <span class="checkmark"></span>
-                            <span class="task-text">${subItem}</span>
-                        </label>
-                        ${btnBotonesEdicion}
+            let btnBotonesEdicion = "";
+            if (modoEdicionActivo) {
+                btnBotonesEdicion = `
+                    <div style="display:flex; gap:4px; margin-left:auto; flex-shrink:0;">
+                        <button class="btn-move" style="width:28px; height:28px;" onclick="moverPendienteLiberacion(${i}, ${subIndex}, -1)"><i class="fas fa-angle-up"></i></button>
+                        <button class="btn-move" style="width:28px; height:28px;" onclick="moverPendienteLiberacion(${i}, ${subIndex}, 1)"><i class="fas fa-angle-down"></i></button>
+                        <button class="btn-outline" style="width:28px; height:28px; padding:0; margin:0;" onclick="editarPendienteLiberacion(${i}, ${subIndex})"><i class="fas fa-pencil-alt"></i></button>
+                        <button class="btn-del-task" style="width:28px; height:28px;" onclick="eliminarPendienteLiberacion(${i}, ${subIndex})"><i class="fas fa-times"></i></button>
                     </div>
                 `;
-            });
-            
+            }
+
+            miniItemsHTML += `
+                <div class="mini-option">
+                    <label class="modern-check-container mini" style="flex-grow:1;">
+                        <input type="checkbox" class="sub-check-${i}" data-idx="${subIndex}" ${isChecked} onchange="verificarEstadoLiberacion(${i})">
+                        <span class="checkmark"></span>
+                        <span class="task-text">${subItem}</span>
+                    </label>
+                    ${btnBotonesEdicion}
+                </div>
+            `;
+        });
+        
+        if (modoEdicionActivo) {
             miniItemsHTML += `
                 <div style="text-align: right; margin-top: 10px; border-top: 1px solid var(--border); padding-top: 10px;">
                     <span style="font-size: 13px; color: var(--accent); cursor: pointer; font-weight: bold;" onclick="agregarPendienteLiberacion(${i})"><i class="fas fa-plus-circle"></i> Agregar actividad</span>
                 </div>
             `;
-
-            const valMat = sesionActual.matriculas[i] || "";
-            const estadoTexto = sesionActual.matriculasHoras[i] ? `¡LISTO! ${sesionActual.matriculasHoras[i]}` : "EN PROGRESO...";
-            const colorEstado = sesionActual.matriculasHoras[i] ? "var(--success)" : "var(--neon-red)";
-            const claseCard = sesionActual.matriculasHoras[i] ? "check-item-lib liberado-ok" : "check-item-lib";
-
-            contenedor.innerHTML += `
-            <div class="${claseCard}" id="cardAeronave${i}">
-              <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--border); padding-bottom:8px;">
-                 <input type="text" id="matEquipo${i}" value="${valMat}" placeholder="ETAPA DEL DÍA" oninput="updateMatricula(${i}, this.value)" style="border:none; flex-grow:1;">
-                 <span id="tsLib${i}" style="font-size:11px; color:${colorEstado}; font-weight:bold;">${estadoTexto}</span>
-              </div>
-              
-              <div class="mini-grid">${miniItemsHTML}</div>
-              
-              <div style="margin-top:10px; border-top: 1px dashed var(--border); padding-top:10px;">
-                  <button type="button" class="btn-camera" onclick="document.getElementById('file${i}').click()">
-                    <i class="fas fa-camera"></i> Evidencia Etapa
-                  </button>
-                  <input type="file" id="file${i}" accept="image/*" style="display:none" onchange="addFoto(${i})">
-                  <div id="galeria${i}" class="galeria-lib"></div>
-              </div>
-            </div>`;
-            setTimeout(() => renderGaleria(i), 0);
         }
+
+        const valMat = sesionActual.matriculas[i] || "";
+        const estadoTexto = sesionActual.matriculasHoras[i] ? `¡LISTO! ${sesionActual.matriculasHoras[i]}` : "EN PROGRESO...";
+        const colorEstado = sesionActual.matriculasHoras[i] ? "var(--success)" : "var(--neon-red)";
+        const claseCard = sesionActual.matriculasHoras[i] ? "check-item-lib liberado-ok" : "check-item-lib";
+
+        contenedor.innerHTML += `
+        <div class="${claseCard}" id="cardAeronave${i}">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 2px solid var(--border); padding-bottom:8px;">
+             <input type="text" id="matEquipo${i}" value="${valMat}" placeholder="ETAPA DEL DÍA" oninput="updateMatricula(${i}, this.value)" style="border:none; flex-grow:1;">
+             <span id="tsLib${i}" style="font-size:11px; color:${colorEstado}; font-weight:bold;">${estadoTexto}</span>
+          </div>
+          
+          <div class="mini-grid">${miniItemsHTML}</div>
+          
+          <div style="margin-top:10px; border-top: 1px dashed var(--border); padding-top:10px;">
+              <button type="button" class="btn-camera" onclick="document.getElementById('file${i}').click()">
+                <i class="fas fa-camera"></i> Evidencia Etapa
+              </button>
+              <input type="file" id="file${i}" accept="image/*" style="display:none" onchange="addFoto(${i})">
+              <div id="galeria${i}" class="galeria-lib"></div>
+          </div>
+        </div>`;
+        setTimeout(() => renderGaleria(i), 0);
     }
+    
     document.getElementById("observacionesTurno").value = sesionActual.observaciones || "";
     renderGaleriaObservaciones();
 }
 
-// --- EDICIÓN DE LIBERACIÓN Y ORDENAMIENTO ---
 function agregarPendienteLiberacion(idAvion) {
     const matricula = sesionActual.matriculas[idAvion] ? sesionActual.matriculas[idAvion].toUpperCase() : "Actividad";
     const texto = prompt("Describe la actividad de la etapa " + matricula + ":");
@@ -1070,15 +1109,6 @@ function moverPendienteLiberacion(idAvion, index, direccion) {
     renderizarChecklistDesdeSesion();
     verificarEstadoLiberacion(idAvion);
     guardarProgreso();
-}
-
-async function guardarProgreso() {
-    if(!sesionActual) return;
-    sesionActual.observaciones = document.getElementById("observacionesTurno").value;
-    sesionActual.fotosAeronaves = fotosAeronaves;
-    sesionActual.fotosObservaciones = fotosObservaciones;
-    await localforage.setItem("sesion_activa_qc", sesionActual);
-    verificarMemoria(); 
 }
 
 function toggleTarea(index) {
@@ -1199,46 +1229,6 @@ function renderGaleria(i) {
 }
 function removeFoto(i, index) { fotosAeronaves[i].splice(index, 1); renderGaleria(i); guardarProgreso(); }
 
-async function validarChecklist() {
-  const tipo = sesionActual.tipo;
-  let matriculasData = [];
-  if (tipo !== "Curso") {
-    for (let i = 1; i <= 4; i++) {
-      const matInput = document.getElementById(`matEquipo${i}`);
-      const mat = matInput.value.trim();
-      const checksFaltantes = document.querySelectorAll(`.sub-check-${i}:not(:checked)`);
-      if (mat !== "") {
-          if (checksFaltantes.length > 0) { alert(`⚠️ La etapa ${mat.toUpperCase()} tiene ${checksFaltantes.length} actividades pendientes.`); return; }
-          const fotosAeronaveExtraidas = Array.isArray(fotosAeronaves[i]) ? [...fotosAeronaves[i]] : [];
-          matriculasData.push({ id: mat.toUpperCase(), hora: sesionActual.matriculasHoras[i] || "--:--", fotos: fotosAeronaveExtraidas });
-      }
-    }
-  }
-  
-  const tareasIncompletas = sesionActual.tareas.some(t => !t.hecho);
-  if (tareasIncompletas) { alert("⚠️ Tareas del día incompletas. Asegúrate de palomear todo."); return; }
-  
-  const colaborador = await localforage.getItem("colaboradorQC");
-  const registro = {
-    nombre: colaborador.nombre, empleado: colaborador.empleado, fecha: colaborador.fecha,
-    jornada: tipo, matriculas: matriculasData, tiempoExtra: sesionActual.esExtra,
-    horaFin: new Date().toLocaleTimeString(), observaciones: document.getElementById("observacionesTurno").value.trim(),
-    fotosObservaciones: [...fotosObservaciones]
-  };
-  
-  const mesClave = `historialQC_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`;
-  const historial = await localforage.getItem(mesClave) || [];
-  historial.push(registro);
-  
-  await localforage.setItem(mesClave, historial);
-  await localforage.removeItem("sesion_activa_qc");
-  sesionActual = null;
-  alert("✅ Vamos con todo un día más siendo mejor que ayer");
-  
-  verificarMemoria(); 
-  irAHistorial();
-}
-
 let nivelZoom = 1;
 
 function verImagenGrande(src) {
@@ -1270,6 +1260,9 @@ function hacerZoom(event) {
 }
 
 function cerrarVisor() { document.getElementById("visorImg").style.display = "none"; }
+
+let indiceEditando = -1;
+let fotosEditando = [];
 
 async function abrirEditor(indice) {
     const mesClave = `historialQC_${new Date().getFullYear()}-${String(new Date().getMonth()+1).padStart(2,"0")}`;
@@ -1387,16 +1380,9 @@ async function eliminarRegistro(i) {
 }
 
 function volverAlInicio(){ document.getElementById("pantallaMenu").style.display = "none"; document.getElementById("pantallaInicio").style.display = "block"; }
-function volverAJornada(){ document.getElementById("pantallaTiempoExtra").style.display = "none"; document.getElementById("pantallaMenu").style.display = "block"; }
 
 async function nuevaJornada(){ 
-    const sesion = await localforage.getItem("sesion_activa_qc");
-    if(sesion){
-        if(confirm("Tienes un día en curso. Si inicias uno nuevo, se perderá tu progreso actual. ¿Estás seguro de continuar?")) {
-            await localforage.removeItem("sesion_activa_qc");
-            location.reload();
-        }
-    } else { location.reload(); }
+  location.reload(); 
 }
 
 async function eliminarHistorial(){
@@ -1407,6 +1393,11 @@ async function eliminarHistorial(){
     verificarMemoria();
     alert("✅ El mes ha sido borrado con éxito. Memoria liberada.");
   }
+}
+
+function volverInicioDesdeHistorial() {
+    document.querySelectorAll("section").forEach(s => s.style.display = "none");
+    document.getElementById("pantallaInicio").style.display = "block"; 
 }
 
 // --- MÓDULO DE CALENDARIO ---
@@ -1510,7 +1501,6 @@ async function guardarEventoRapido() {
     
     await localforage.setItem("agendaQC", agenda);
     
-    // Refrescar la vista actual del día
     const diaNum = parseInt(diaSeleccionado.split("-")[2]);
     abrirDetalleDia(diaSeleccionado, diaNum);
 }
